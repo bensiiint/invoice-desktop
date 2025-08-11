@@ -51,10 +51,9 @@ function App() {
       description: "受入れデータ機械配管図面仕様の検討・修正",
       referenceNumber: "",
       days: 5,
-      hoursPerDay: 40,
+      totalHours: 40,
       overtimeHours: 3,
       softwareUnits: 43,
-      overheadUnits: 8,
       unitType: "JD",
     },
     {
@@ -62,20 +61,21 @@ function App() {
       description: "Administrative Overhead",
       referenceNumber: "",
       days: 0,
-      hoursPerDay: 0,
+      totalHours: 0,
       overtimeHours: 0,
       softwareUnits: 0,
-      overheadUnits: 0,
       unitType: "LS",
     },
   ]);
 
-  // Base Rates State - Value Basis
+  // Base Rates State - Value Basis (now includes editable fields)
   const [baseRates, setBaseRates] = useState({
-    timeChargeRate: 2700,
-    overtimeRate: 3300,
-    softwareRate: 500,
-    overheadRate: 2700,
+    hoursPerDay: 8, // Standard hours per day
+    timeChargeRate: 2700, // per hour
+    otHoursMultiplier: 1.3, // OT Hours multiplier - editable
+    overtimeRate: 3300, // per hour - can be calculated or edited independently
+    softwareRate: 500, // per unit
+    overheadPercentage: 20, // Overhead percentage - now editable
   });
 
   const [currentView, setCurrentView] = useState("input");
@@ -86,6 +86,19 @@ function App() {
   useEffect(() => {
     setHasUnsavedChanges(true);
   }, [tasks, companyInfo, clientInfo, quotationDetails, baseRates]);
+
+  // Auto-calculate overtime rate when OT hours multiplier changes
+  useEffect(() => {
+    const calculatedOvertimeRate =
+      baseRates.timeChargeRate * baseRates.otHoursMultiplier;
+    // Only update if the calculated rate is different and we're not in the middle of editing
+    if (Math.abs(calculatedOvertimeRate - baseRates.overtimeRate) > 0.01) {
+      setBaseRates((prev) => ({
+        ...prev,
+        overtimeRate: Math.round(calculatedOvertimeRate),
+      }));
+    }
+  }, [baseRates.timeChargeRate, baseRates.otHoursMultiplier]);
 
   // Listen for menu events
   useEffect(() => {
@@ -122,10 +135,9 @@ function App() {
         description: "",
         referenceNumber: "",
         days: 0,
-        hoursPerDay: 8,
+        totalHours: 0,
         overtimeHours: 0,
         softwareUnits: 0,
-        overheadUnits: 0,
         unitType: "JD",
       },
     ]);
@@ -251,10 +263,9 @@ function App() {
       description: "",
       referenceNumber: "",
       days: 0,
-      hoursPerDay: 8,
+      totalHours: 0,
       overtimeHours: 0,
       softwareUnits: 0,
-      overheadUnits: 0,
       unitType: "JD",
     };
     setTasks([...tasks, newTask]);
@@ -272,13 +283,44 @@ function App() {
     );
   };
 
+  // Update base rates with special handling
+  const updateBaseRate = (field, value) => {
+    setBaseRates((prev) => {
+      const newRates = { ...prev, [field]: value };
+
+      // If OT Hours multiplier is changed, auto-update overtime rate
+      if (field === "otHoursMultiplier") {
+        newRates.overtimeRate = Math.round(newRates.timeChargeRate * value);
+      }
+      // If time charge rate is changed, auto-update overtime rate
+      else if (field === "timeChargeRate") {
+        newRates.overtimeRate = Math.round(value * newRates.otHoursMultiplier);
+      }
+      // If overtime rate is changed directly, don't affect OT Hours multiplier
+      // (no special handling needed - just update the value)
+
+      return newRates;
+    });
+  };
+
   // Calculate individual task total
   const calculateTaskTotal = (task) => {
-    const basicLabor = task.days * task.hoursPerDay * baseRates.timeChargeRate;
+    const basicLabor = task.totalHours * baseRates.timeChargeRate;
     const overtime = task.overtimeHours * baseRates.overtimeRate;
     const software = (task.softwareUnits || 0) * baseRates.softwareRate;
-    const overhead = (task.overheadUnits || 0) * baseRates.overheadRate;
+    const subtotal = basicLabor + overtime + software;
+    const overhead = subtotal * (baseRates.overheadPercentage / 100);
     return basicLabor + overtime + software + overhead;
+  };
+
+  // Calculate subtotals for display
+  const calculateSubtotals = (task) => {
+    const basicLabor = task.totalHours * baseRates.timeChargeRate;
+    const overtime = task.overtimeHours * baseRates.overtimeRate;
+    const software = (task.softwareUnits || 0) * baseRates.softwareRate;
+    const subtotal = basicLabor + overtime + software;
+    const overhead = subtotal * (baseRates.overheadPercentage / 100);
+    return { basicLabor, overtime, software, overhead, subtotal };
   };
 
   // Calculate grand total
@@ -550,208 +592,232 @@ function App() {
                         <tr>
                           <th>Description</th>
                           <th>Days</th>
-                          <th>Hrs/Day</th>
-                          <th>Rate</th>
+                          <th>Hr</th>
+                          <th>Time Charge</th>
                           <th>OT Hrs</th>
-                          <th>OT Rate</th>
+                          <th>Overtime</th>
                           <th>Software</th>
-                          <th>Overhead</th>
+                          <th>OH</th>
                           <th>Total</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {/* Value Basis Row */}
+                        {/* Value Basis Row - Now fully editable */}
                         <tr className="value-basis-row">
                           <td className="description-cell">
                             <strong>Value Basis</strong>
                           </td>
-                          <td>-</td>
-                          <td>-</td>
-                          <td>
+                          <td className="basis-value-cell">-</td>
+                          <td className="basis-value-cell">
+                            <input
+                              type="number"
+                              value={baseRates.hoursPerDay}
+                              onChange={(e) =>
+                                updateBaseRate(
+                                  "hoursPerDay",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="table-input number-input rate-input"
+                              min="0"
+                              step="0.5"
+                            />
+                          </td>
+                          <td className="basis-rate-cell">
                             <input
                               type="number"
                               value={baseRates.timeChargeRate}
                               onChange={(e) =>
-                                setBaseRates({
-                                  ...baseRates,
-                                  timeChargeRate:
-                                    parseFloat(e.target.value) || 0,
-                                })
+                                updateBaseRate(
+                                  "timeChargeRate",
+                                  parseFloat(e.target.value) || 0
+                                )
                               }
                               className="table-input number-input rate-input"
                               min="0"
                             />
                           </td>
-                          <td>-</td>
-                          <td>
+                          <td className="basis-rate-cell">
+                            <input
+                              type="number"
+                              value={baseRates.otHoursMultiplier}
+                              onChange={(e) =>
+                                updateBaseRate(
+                                  "otHoursMultiplier",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="table-input number-input rate-input"
+                              min="0"
+                              step="0.1"
+                            />
+                          </td>
+                          <td className="basis-rate-cell">
                             <input
                               type="number"
                               value={baseRates.overtimeRate}
                               onChange={(e) =>
-                                setBaseRates({
-                                  ...baseRates,
-                                  overtimeRate: parseFloat(e.target.value) || 0,
-                                })
+                                updateBaseRate(
+                                  "overtimeRate",
+                                  parseFloat(e.target.value) || 0
+                                )
                               }
                               className="table-input number-input rate-input"
                               min="0"
                             />
                           </td>
-                          <td>
+                          <td className="basis-rate-cell">
                             <input
                               type="number"
                               value={baseRates.softwareRate}
                               onChange={(e) =>
-                                setBaseRates({
-                                  ...baseRates,
-                                  softwareRate: parseFloat(e.target.value) || 0,
-                                })
+                                updateBaseRate(
+                                  "softwareRate",
+                                  parseFloat(e.target.value) || 0
+                                )
                               }
                               className="table-input number-input rate-input"
                               min="0"
                             />
                           </td>
-                          <td>
-                            <input
-                              type="number"
-                              value={baseRates.overheadRate}
-                              onChange={(e) =>
-                                setBaseRates({
-                                  ...baseRates,
-                                  overheadRate: parseFloat(e.target.value) || 0,
-                                })
-                              }
-                              className="table-input number-input rate-input"
-                              min="0"
-                            />
+                          <td className="basis-rate-cell">
+                            <div className="overhead-input-container">
+                              <input
+                                type="number"
+                                value={baseRates.overheadPercentage}
+                                onChange={(e) =>
+                                  updateBaseRate(
+                                    "overheadPercentage",
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
+                                className="table-input number-input rate-input overhead-percentage-input"
+                                min="0"
+                                max="100"
+                                step="1"
+                              />
+                              <span className="percentage-symbol">%</span>
+                            </div>
                           </td>
-                          <td className="total-cell">
+                          <td className="total-cell basis-total">
                             <strong>Base Rates</strong>
                           </td>
                           <td></td>
                         </tr>
 
                         {/* Task Rows */}
-                        {tasks.map((task) => (
-                          <tr key={task.id}>
-                            <td className="description-cell">
-                              <input
-                                type="text"
-                                value={task.description}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "description",
-                                    e.target.value
-                                  )
-                                }
-                                className="table-input description-input"
-                                placeholder="Task description"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={task.days}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "days",
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                                className="table-input number-input"
-                                min="0"
-                                step="0.5"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={task.hoursPerDay}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "hoursPerDay",
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                                className="table-input number-input"
-                                min="0"
-                              />
-                            </td>
-                            <td className="calculated-cell">
-                              {formatCurrency(
-                                task.days *
-                                  task.hoursPerDay *
-                                  baseRates.timeChargeRate
-                              )}
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={task.overtimeHours}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "overtimeHours",
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                                className="table-input number-input"
-                                min="0"
-                                step="0.5"
-                              />
-                            </td>
-                            <td className="calculated-cell">
-                              {formatCurrency(
-                                task.overtimeHours * baseRates.overtimeRate
-                              )}
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={task.softwareUnits || 0}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "softwareUnits",
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                                className="table-input number-input"
-                                min="0"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                value={task.overheadUnits || 0}
-                                onChange={(e) =>
-                                  updateTask(
-                                    task.id,
-                                    "overheadUnits",
-                                    parseFloat(e.target.value) || 0
-                                  )
-                                }
-                                className="table-input number-input"
-                                min="0"
-                              />
-                            </td>
-                            <td className="total-cell">
-                              {formatCurrency(calculateTaskTotal(task))}
-                            </td>
-                            <td className="action-cell">
-                              <button
-                                onClick={() => removeTask(task.id)}
-                                className="remove-task-button"
-                              >
-                                <Trash2 className="remove-icon" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {tasks.map((task) => {
+                          const subtotals = calculateSubtotals(task);
+                          return (
+                            <tr key={task.id}>
+                              <td className="description-cell">
+                                <input
+                                  type="text"
+                                  value={task.description}
+                                  onChange={(e) =>
+                                    updateTask(
+                                      task.id,
+                                      "description",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="table-input description-input"
+                                  placeholder="Task description"
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  value={task.days}
+                                  onChange={(e) =>
+                                    updateTask(
+                                      task.id,
+                                      "days",
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="table-input number-input"
+                                  min="0"
+                                  step="0.5"
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  value={task.totalHours}
+                                  onChange={(e) =>
+                                    updateTask(
+                                      task.id,
+                                      "totalHours",
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="table-input number-input"
+                                  min="0"
+                                  step="0.5"
+                                />
+                              </td>
+                              <td className="calculated-cell time-charge-bg">
+                                {formatCurrency(subtotals.basicLabor)}
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  value={task.overtimeHours}
+                                  onChange={(e) =>
+                                    updateTask(
+                                      task.id,
+                                      "overtimeHours",
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="table-input number-input"
+                                  min="0"
+                                  step="0.5"
+                                />
+                              </td>
+                              <td className="calculated-cell overtime-bg">
+                                {formatCurrency(subtotals.overtime)}
+                              </td>
+                              <td className="software-cell">
+                                <div className="software-input-container">
+                                  <input
+                                    type="number"
+                                    value={task.softwareUnits || 0}
+                                    onChange={(e) =>
+                                      updateTask(
+                                        task.id,
+                                        "softwareUnits",
+                                        parseFloat(e.target.value) || 0
+                                      )
+                                    }
+                                    className="table-input number-input software-units-input"
+                                    min="0"
+                                  />
+                                  <span className="software-total">
+                                    {formatCurrency(subtotals.software)}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="calculated-cell overhead-bg">
+                                {formatCurrency(subtotals.overhead)}
+                              </td>
+                              <td className="total-cell">
+                                {formatCurrency(calculateTaskTotal(task))}
+                              </td>
+                              <td className="action-cell">
+                                <button
+                                  onClick={() => removeTask(task.id)}
+                                  className="remove-task-button"
+                                  title="Remove task"
+                                >
+                                  <Trash2 className="remove-icon" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                       <tfoot>
                         <tr className="grand-total-row">
@@ -773,96 +839,140 @@ function App() {
             </div>
           </main>
         ) : (
-          // Quotation Preview
+          // Quotation Preview - Exact Template Match
           <div className="quotation-preview">
-            <div className="quotation-paper">
-              {/* Header */}
-              <div className="quotation-header">
-                <div className="company-brand">
-                  <div className="company-logo">
-                    <Building2 className="logo" />
-                  </div>
-                  <div className="company-info">
-                    <h1>{companyInfo.name}</h1>
-                    <h2>Quotation</h2>
-                  </div>
-                </div>
-                <div className="quote-details">
-                  <div>
-                    <strong>QUOTATION NO.:</strong>{" "}
-                    {quotationDetails.quotationNo}
-                  </div>
-                  <div>
-                    <strong>REFERENCE NO.:</strong>{" "}
-                    {quotationDetails.referenceNo}
-                  </div>
-                  <div>
-                    <strong>DATE:</strong> {quotationDetails.date}
+            <div className="quotation-paper-exact">
+              {/* Logo and Header */}
+              <div className="header-section">
+                <div className="logo-section">
+                  <div className="company-logo-circle">
+                    <img
+                      src="/KmtiLogo.png"
+                      alt="Company Logo"
+                      className="logo-image"
+                    />
                   </div>
                 </div>
-              </div>
-
-              {/* Parties */}
-              <div className="quotation-parties">
-                <div className="party">
-                  <h3>Quotation to:</h3>
-                  <div className="party-info">
-                    <div className="party-name">{clientInfo.company}</div>
-                    <div>{clientInfo.contact}</div>
-                    <div>{clientInfo.address}</div>
-                    <div>{clientInfo.phone}</div>
+                <div className="header-text">
+                  <div className="company-name-header">
+                    KUSAKABE & MAENO TECH., INC
                   </div>
+                  <div className="quotation-title">Quotation</div>
                 </div>
-                <div className="party">
-                  <h3>From:</h3>
-                  <div className="party-info">
-                    <div className="party-name">{companyInfo.name}</div>
-                    <div>{companyInfo.address}</div>
-                    <div>{companyInfo.city}</div>
-                    <div>{companyInfo.location}</div>
-                    <div>{companyInfo.phone}</div>
+                <div className="quotation-details-box">
+                  <div className="details-container">
+                    <div className="detail-line">
+                      <span className="detail-label">Quotation. NO.:</span>
+                      <span className="detail-value">
+                        {quotationDetails.quotationNo}
+                      </span>
+                    </div>
+                    <div className="detail-line">
+                      <span className="detail-label">REFERENCE NO.:</span>
+                      <span className="detail-value">
+                        {quotationDetails.referenceNo}
+                      </span>
+                    </div>
+                    <div className="detail-line">
+                      <span className="detail-label">DATE:</span>
+                      <span className="detail-value">
+                        {quotationDetails.date}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Items */}
-              <table className="items-table">
+              {/* Contact Information */}
+              <div className="contact-section">
+                <div className="quotation-to">
+                  <div className="contact-header">Quotation to</div>
+                  <div className="contact-details">
+                    <div className="company-name">{clientInfo.company}</div>
+                    <div className="contact-person">{clientInfo.contact}</div>
+                    <div className="address-line">{clientInfo.address}</div>
+                    <div className="phone-line">{clientInfo.phone}</div>
+                  </div>
+                </div>
+                <div className="company-from">
+                  <div className="from-details">
+                    <div className="from-company">{companyInfo.name}</div>
+                    <div className="from-address">{companyInfo.address}</div>
+                    <div className="from-address">{companyInfo.city}</div>
+                    <div className="from-address">{companyInfo.location}</div>
+                    <div className="from-phone">{companyInfo.phone}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <table className="quotation-table-exact">
                 <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th>Reference</th>
-                    <th>Description</th>
-                    <th>Unit</th>
-                    <th>Type</th>
-                    <th>Price</th>
+                  <tr className="table-header">
+                    <th className="col-no">No.</th>
+                    <th className="col-reference" colSpan="3">
+                      REFERENCE NUMBER
+                    </th>
+                    <th className="col-description">DESCRIPTION</th>
+                    <th className="col-unit">
+                      Unit
+                      <br />
+                      (Page)
+                    </th>
+                    <th className="col-type">Type</th>
+                    <th className="col-price" colSpan="2">
+                      Price
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {tasks.map((task, index) => (
-                    <tr key={task.id}>
-                      <td>{index + 1}</td>
-                      <td>{task.referenceNumber}</td>
-                      <td>{task.description}</td>
-                      <td>{task.days > 0 ? task.days : 1}</td>
-                      <td>{task.unitType}</td>
-                      <td className="price">
+                    <tr key={task.id} className="item-row">
+                      <td className="col-no">{index + 1}</td>
+                      <td className="col-reference" colSpan="3">
+                        {task.referenceNumber || "　"}
+                      </td>
+                      <td className="col-description">{task.description}</td>
+                      <td className="col-unit">
+                        {task.days > 0 ? task.days : "　"}
+                      </td>
+                      <td className="col-type">{task.unitType}</td>
+                      <td className="col-price" colSpan="2">
                         {formatCurrency(calculateTaskTotal(task))}
                       </td>
                     </tr>
                   ))}
-                  <tr className="total-row">
-                    <td colSpan="5">
-                      <strong>Total Amount</strong>
+                  {/* Empty rows to match template */}
+                  {Array.from(
+                    { length: Math.max(0, 8 - tasks.length) },
+                    (_, i) => (
+                      <tr key={`empty-${i}`} className="item-row">
+                        <td className="col-no">　</td>
+                        <td className="col-reference" colSpan="3">
+                          　
+                        </td>
+                        <td className="col-description">　</td>
+                        <td className="col-unit">　</td>
+                        <td className="col-type">　</td>
+                        <td className="col-price" colSpan="2">
+                          　
+                        </td>
+                      </tr>
+                    )
+                  )}
+                  <tr className="total-amount-row">
+                    <td colSpan="7" className="total-label">
+                      Total Amount
                     </td>
-                    <td className="price total">
-                      <strong>{formatCurrency(calculateGrandTotal())}</strong>
+                    <td colSpan="2" className="total-value">
+                      {formatCurrency(calculateGrandTotal())}
                     </td>
                   </tr>
                 </tbody>
               </table>
 
               {/* Terms */}
-              <div className="terms">
+              <div className="terms-section">
                 <p>
                   Upon receipt of this quotation sheet, kindly send us one copy
                   with your signature.
@@ -874,23 +984,36 @@ function App() {
               </div>
 
               {/* Signatures */}
-              <div className="signatures">
-                <div className="signature">
-                  <div className="sig-title">Prepared by:</div>
-                  <div className="sig-line"></div>
-                  <div className="sig-name">MR. MICHAEL PENAÑO</div>
-                  <div className="sig-role">Engineering Manager</div>
+              <div className="signatures-section">
+                <div className="signature-row">
+                  <div className="sig-group">
+                    <div className="sig-title">Prepared by:</div>
+                    <div className="sig-space"></div>
+                    <div className="sig-name">MR. MICHAEL PENAÑO</div>
+                    <div className="sig-role">Engineering Manager</div>
+                  </div>
+                  <div className="sig-spacer"></div>
+                  <div className="sig-group">
+                    <div className="sig-title">Approved by:</div>
+                    <div className="sig-space"></div>
+                    <div className="sig-name">MR. YUICHIRO MAENO</div>
+                    <div className="sig-role">President</div>
+                  </div>
+                  <div className="sig-group">
+                    <div className="sig-title">Received by:</div>
+                    <div className="sig-space"></div>
+                    <div className="sig-name">
+                      (Signature Over Printed Name)
+                    </div>
+                  </div>
                 </div>
-                <div className="signature">
-                  <div className="sig-title">Received by:</div>
-                  <div className="sig-line"></div>
-                  <div className="sig-name">(Signature Over Printed Name)</div>
-                </div>
-                <div className="signature">
-                  <div className="sig-title">Approved by:</div>
-                  <div className="sig-line"></div>
-                  <div className="sig-name">MR. YUICHIRO MAENO</div>
-                  <div className="sig-role">President</div>
+              </div>
+
+              {/* Footer */}
+              <div className="footer-section">
+                <div className="footer-left">cc: admin/acctg/Engineering</div>
+                <div className="footer-right">
+                  Admin Quotation Template v2.0-2016
                 </div>
               </div>
             </div>
