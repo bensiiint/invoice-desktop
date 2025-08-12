@@ -11,7 +11,6 @@ import {
   Save,
   FolderOpen,
   Download,
-  Eye,
 } from "lucide-react";
 import "./App.css";
 
@@ -77,8 +76,6 @@ function App() {
     softwareRate: 500, // per unit
     overheadPercentage: 20, // Overhead percentage - now editable
   });
-
-  const [currentView, setCurrentView] = useState("input");
   const [currentFilePath, setCurrentFilePath] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -150,7 +147,6 @@ function App() {
 
     setCurrentFilePath(null);
     setHasUnsavedChanges(false);
-    setCurrentView("input");
   };
 
   // Save Invoice
@@ -250,10 +246,7 @@ function App() {
 
   // Export PDF
   const exportPDF = () => {
-    setCurrentView("quotation");
-    setTimeout(() => {
-      window.print();
-    }, 500);
+    window.print();
   };
 
   // Add new task
@@ -370,32 +363,20 @@ function App() {
 
           <div className="view-switcher">
             <button
-              className={`switcher-button ${
-                currentView === "input" ? "active" : ""
-              }`}
-              onClick={() => setCurrentView("input")}
+              className={`switcher-button active`}
+              disabled
             >
               <Calculator className="switcher-icon" />
               <span>Calculate</span>
-            </button>
-            <button
-              className={`switcher-button ${
-                currentView === "quotation" ? "active" : ""
-              }`}
-              onClick={() => setCurrentView("quotation")}
-            >
-              <Eye className="switcher-icon" />
-              <span>Preview</span>
             </button>
           </div>
         </div>
       </nav>
 
       <div className="app-body">
-        {currentView === "input" ? (
-          // Single Page Vertical Layout
-          <main className="vertical-layout-content">
-            <div className="content-wrapper">
+        {/* Single Page Vertical Layout */}
+        <main className="vertical-layout-content">
+          <div className="content-wrapper">
               {/* Quotation Details - Moved to Top */}
               <div className="section-card quotation-top">
                 <div className="card-header">
@@ -836,11 +817,11 @@ function App() {
                   </div>
                 </div>
               </div>
-            </div>
-          </main>
-        ) : (
-          // Quotation Preview - Exact Template Match
-          <div className="quotation-preview">
+              </div>
+              </main>
+                
+          {/* Hidden Print Layout - Only visible when printing */}
+          <div className="print-only-layout">
             <div className="quotation-paper-exact">
               {/* Logo and Header */}
               <div className="header-section">
@@ -895,8 +876,8 @@ function App() {
                   </div>
                 </div>
                 <div className="company-from">
+                  <div className="contact-header">{companyInfo.name}</div>
                   <div className="from-details">
-                    <div className="from-company">{companyInfo.name}</div>
                     <div className="from-address">{companyInfo.address}</div>
                     <div className="from-address">{companyInfo.city}</div>
                     <div className="from-address">{companyInfo.location}</div>
@@ -1018,8 +999,7 @@ function App() {
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
     </div>
   );
 }
