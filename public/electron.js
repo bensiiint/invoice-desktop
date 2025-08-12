@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -11,30 +12,45 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
-    icon: path.join(__dirname, 'icon.png'), // Your custom icon
+    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
+      nodeIntegration: false, // Better security and performance
+      contextIsolation: true,  // Better security and performance
+      preload: path.join(__dirname, 'preload.js'), // We'll create this
+      webSecurity: true,
     },
     titleBarStyle: 'default',
     show: false, // Don't show until ready
+    backgroundColor: '#ffffff', // Prevent flash
   });
 
-  // Load the app
-  const startUrl = isDev 
-    ? 'http://localhost:3000' 
-    : `file://${path.join(__dirname, '../build/index.html')}`;
+  // Always try to load from build first, fallback to dev server
+  const buildPath = path.join(__dirname, '../build/index.html');
+  const hasBuild = fs.existsSync(buildPath);
   
+  const startUrl = hasBuild 
+    ? `file://${buildPath}`
+    : (isDev ? 'http://localhost:3000' : `file://${buildPath}`);
+  
+  console.log('Loading from:', startUrl);
   mainWindow.loadURL(startUrl);
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
-    // Focus on window
-    if (isDev) {
+    // Only open dev tools in development
+    if (isDev && !hasBuild) {
       mainWindow.webContents.openDevTools();
+    }
+  });
+
+  // Handle load errors
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.log('Failed to load:', validatedURL, errorDescription);
+    if (validatedURL.includes('localhost') && hasBuild) {
+      console.log('Falling back to build files...');
+      mainWindow.loadURL(`file://${buildPath}`);
     }
   });
 
@@ -57,20 +73,6 @@ function createMenu() {
           accelerator: 'CmdOrCtrl+N',
           click: () => {
             mainWindow.webContents.send('menu-new-invoice');
-          }
-        },
-        {
-          label: 'Save Invoice',
-          accelerator: 'CmdOrCtrl+S',
-          click: () => {
-            mainWindow.webContents.send('menu-save-invoice');
-          }
-        },
-        {
-          label: 'Load Invoice',
-          accelerator: 'CmdOrCtrl+O',
-          click: () => {
-            mainWindow.webContents.send('menu-load-invoice');
           }
         },
         { type: 'separator' },
@@ -108,7 +110,7 @@ function createMenu() {
       submenu: [
         { role: 'reload' },
         { role: 'forceReload' },
-        { role: 'toggleDevTools' },
+        ...(isDev ? [{ role: 'toggleDevTools' }] : []),
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
@@ -128,12 +130,12 @@ function createMenu() {
       label: 'Help',
       submenu: [
         {
-          label: 'About Engineering Invoice',
+          label: 'About KMTI Quotation App',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About',
-              message: 'Engineering Invoice System',
+              message: 'KMTI Quotation App',
               detail: 'Version 1.0.0\nBuilt with Electron & React\n\nDeveloped for KUSAKABE & MAENO TECH., INC'
             });
           }
@@ -160,28 +162,6 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-// Handle file operations
-ipcMain.handle('save-file-dialog', async () => {
-  const result = await dialog.showSaveDialog(mainWindow, {
-    filters: [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-  return result;
-});
-
-ipcMain.handle('open-file-dialog', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    filters: [
-      { name: 'JSON Files', extensions: ['json'] },
-      { name: 'All Files', extensions: ['*'] }
-    ],
-    properties: ['openFile']
-  });
-  return result;
 });
 
 // Prevent navigation to external links

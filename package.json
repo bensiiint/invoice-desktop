@@ -21,20 +21,28 @@
     "eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-dev-fast": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\" --kill-others",
+    "electron-prod": "npm run build && electron .",
     "electron-pack": "npm run build && electron-builder",
-    "preelectron-pack": "npm run build"
+    "dist": "npm run build && electron-builder --publish=never",
+    "dist-win": "npm run build && electron-builder --win --publish=never",
+    "preelectron-pack": "npm run build",
+    "desktop": "cross-env BROWSER=none react-scripts start",
+    "app": "npm run desktop"
   },
   "build": {
     "appId": "com.kusakabemaeno.engineeringinvoice",
-    "productName": "Engineering Invoice System",
+    "productName": "KMTI Quotation App",
     "directories": {
       "output": "dist"
     },
     "files": [
       "build/**/*",
       "public/electron.js",
+      "public/preload.js",
       "public/icon.*",
-      "node_modules/**/*"
+      "!node_modules",
+      "node_modules/electron-is-dev/**/*"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -80,6 +88,7 @@
   },
   "devDependencies": {
     "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
     "electron": "^22.0.0",
     "electron-builder": "^23.6.0",
     "electron-is-dev": "^2.0.0",

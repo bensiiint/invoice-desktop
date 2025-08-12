@@ -107,6 +107,17 @@ body {
   border-color: #2563eb;
 }
 
+.action-button.export {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.action-button.export:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
 .action-icon {
   width: 16px;
   height: 16px;
