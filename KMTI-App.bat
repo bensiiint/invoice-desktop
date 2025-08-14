@@ -1,6 +1,0 @@
-@echo off
-title KMTI Quotation App - Starting...
-cd /d "%~dp0"
-echo Starting KMTI Quotation App...
-npm run app
-pause

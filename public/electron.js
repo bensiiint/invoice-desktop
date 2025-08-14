@@ -6,7 +6,7 @@ const fs = require('fs');
 let mainWindow;
 
 function createWindow() {
-  // Create the browser window
+  // Create the browser window with optimized settings
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -16,36 +16,49 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false, // Better security and performance
       contextIsolation: true,  // Better security and performance
-      preload: path.join(__dirname, 'preload.js'), // We'll create this
+      preload: path.join(__dirname, 'preload.js'),
       webSecurity: true,
+      // Performance optimizations
+      experimentalFeatures: false,
+      enableRemoteModule: false,
     },
     titleBarStyle: 'default',
-    show: false, // Don't show until ready
-    backgroundColor: '#ffffff', // Prevent flash
+    show: false, // Don't show until ready-to-show (prevents flash)
+    backgroundColor: '#ffffff', // Prevent white flash
   });
 
-  // Always try to load from build first, fallback to dev server
+  // Performance improvement: Always prefer build over dev server
   const buildPath = path.join(__dirname, '../build/index.html');
   const hasBuild = fs.existsSync(buildPath);
   
-  const startUrl = hasBuild 
-    ? `file://${buildPath}`
-    : (isDev ? 'http://localhost:3000' : `file://${buildPath}`);
+  let startUrl;
+  if (hasBuild) {
+    // Use build files for better performance
+    startUrl = `file://${buildPath}`;
+    console.log('Loading from optimized build files');
+  } else if (isDev) {
+    // Fallback to dev server only if no build exists
+    startUrl = 'http://localhost:3000';
+    console.log('Loading from development server');
+  } else {
+    // Production fallback
+    startUrl = `file://${buildPath}`;
+  }
   
-  console.log('Loading from:', startUrl);
+  console.log('Loading URL:', startUrl);
   mainWindow.loadURL(startUrl);
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
-    // Only open dev tools in development
-    if (isDev && !hasBuild) {
+    // Only open dev tools in development and when no build exists
+    if (isDev && !hasBuild && process.env.NODE_ENV === 'development') {
       mainWindow.webContents.openDevTools();
     }
   });
 
-  // Handle load errors
+  // Handle load errors gracefully
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
     console.log('Failed to load:', validatedURL, errorDescription);
     if (validatedURL.includes('localhost') && hasBuild) {
@@ -54,12 +67,17 @@ function createWindow() {
     }
   });
 
+  // Performance: Remove default menu in production
+  if (!isDev) {
+    mainWindow.setMenuBarVisibility(false);
+  }
+
   // Emitted when the window is closed
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  // Create application menu
+  // Create optimized application menu
   createMenu();
 }
 
@@ -73,6 +91,21 @@ function createMenu() {
           accelerator: 'CmdOrCtrl+N',
           click: () => {
             mainWindow.webContents.send('menu-new-invoice');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Save Invoice',
+          accelerator: 'CmdOrCtrl+S',
+          click: () => {
+            mainWindow.webContents.send('menu-save-invoice');
+          }
+        },
+        {
+          label: 'Load Invoice',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => {
+            mainWindow.webContents.send('menu-load-invoice');
           }
         },
         { type: 'separator' },
@@ -148,8 +181,14 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-// This method will be called when Electron has finished initialization
-app.whenReady().then(createWindow);
+// Optimize app initialization
+app.whenReady().then(() => {
+  createWindow();
+
+  // Performance: Enable hardware acceleration
+  app.commandLine.appendSwitch('enable-gpu-rasterization');
+  app.commandLine.appendSwitch('enable-zero-copy');
+});
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
@@ -164,10 +203,16 @@ app.on('activate', () => {
   }
 });
 
-// Prevent navigation to external links
+// Security: Prevent navigation to external links
 app.on('web-contents-created', (event, contents) => {
   contents.on('new-window', (event, navigationUrl) => {
     event.preventDefault();
     require('electron').shell.openExternal(navigationUrl);
+  });
+
+  // Performance: Disable node integration in new windows
+  contents.on('will-attach-webview', (event, webPreferences, params) => {
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
   });
 });

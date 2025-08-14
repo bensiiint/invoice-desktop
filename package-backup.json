@@ -13,13 +13,33 @@
   "scripts": {
     "start": "cross-env BROWSER=none react-scripts start",
     "build": "react-scripts build",
+    "test": "react-scripts test --passWithNoTests",
     "electron": "electron .",
     "dev": "npm run build && electron .",
     "dev-live": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\" --kill-others",
+    "dev-fast": "npm run build && electron .",
     "prod": "npm run build && electron .",
     "pack": "npm run build && electron-builder --publish=never",
     "pack-win": "npm run build && electron-builder --win --publish=never",
-    "web": "react-scripts start"
+    "web": "react-scripts start",
+    "web-build": "react-scripts build"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "build": {
     "appId": "com.kusakabemaeno.engineeringinvoice",
@@ -46,23 +66,6 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
     }
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "devDependencies": {
     "concurrently": "^7.6.0",
