@@ -29,9 +29,9 @@ const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200];
 
 const MARGIN_PRESETS = {
   none: { top: 0, right: 0, bottom: 0, left: 0, label: 'None' },
-  minimum: { top: 6, right: 6, bottom: 6, left: 6, label: 'Minimum' },
-  default: { top: 15, right: 15, bottom: 15, left: 15, label: 'Default' },
-  maximum: { top: 25, right: 25, bottom: 25, left: 25, label: 'Maximum' },
+  minimum: { top: 2, right: 2, bottom: 2, left: 2, label: 'Minimum' },
+  default: { top: 5, right: 5, bottom: 5, left: 5, label: 'Default' },
+  maximum: { top: 8, right: 8, bottom: 8, left: 8, label: 'Maximum' },
 };
 
 const PrintPreviewModal = memo(({ 
@@ -147,31 +147,57 @@ const PrintPreviewModal = memo(({
       const html2pdf = (await import('html2pdf.js')).default;
       
       const element = previewRef.current;
+      
+      // Add PDF-specific class only to the content element
+      if (element) {
+        element.classList.add('pdf-generation');
+      }
+      
+      // Wait for styles to apply
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const opt = {
         margin: [margins.top, margins.right, margins.bottom, margins.left],
         filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { 
+          type: 'jpeg', 
+          quality: 0.95
+        },
         html2canvas: { 
-          scale: 2,
+          scale: 2.5,
           useCORS: true,
-          letterRendering: true 
+          letterRendering: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: paperDimensions.width * 3.78,
+          height: paperDimensions.height * 3.78,
+          scrollX: 0,
+          scrollY: 0
         },
         jsPDF: { 
           unit: 'mm', 
-          format: settings.paperSize.toLowerCase(), 
-          orientation: settings.orientation 
-        }
+          format: [paperDimensions.width, paperDimensions.height],
+          orientation: settings.orientation,
+          compress: true
+        },
+        pagebreak: { mode: 'avoid-all' }
       };
       
       await html2pdf().set(opt).from(element).save();
+      
     } catch (error) {
       console.error('PDF generation failed:', error);
       // Fallback to print
       handlePrint();
     } finally {
+      // Remove PDF-specific class
+      const element = previewRef.current;
+      if (element) {
+        element.classList.remove('pdf-generation');
+      }
       setIsProcessing(false);
     }
-  }, [settings, margins, quotationDetails.quotationNo, handlePrint]);
+  }, [quotationDetails.quotationNo, handlePrint, settings, paperDimensions, margins]);
 
   // Handle zoom
   const handleZoomIn = useCallback(() => {
@@ -322,8 +348,16 @@ const PrintPreviewModal = memo(({
               >
                 <div 
                 ref={previewRef}
-                className="preview-content"
-                // Remove inline style padding - now handled by CSS
+                className={`preview-content ${margins.top === 0 ? 'no-margins' : ''}`}
+                style={{
+                  '--paper-width': `${paperDimensions.width}mm`,
+                  '--paper-height': `${paperDimensions.height}mm`,
+                  '--scale-factor': Math.min(paperDimensions.width / 210, paperDimensions.height / 297),
+                  '--margin-top': `${margins.top}mm`,
+                  '--margin-right': `${margins.right}mm`,
+                  '--margin-bottom': `${margins.bottom}mm`,
+                  '--margin-left': `${margins.left}mm`
+                }}
                 >
                   {/* Invoice Content - Exact Copy from PrintLayout */}
                   <div className="quotation-paper-exact">
