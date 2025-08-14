@@ -111,6 +111,8 @@ export function useFileOperations({
   }, [hasUnsavedChanges, loadData]);
 
   // Export PDF
+  // Note: This function is now replaced by the PrintPreviewModal
+  // Keeping for backward compatibility if needed
   const exportPDF = useCallback(() => {
     window.print();
   }, []);
@@ -119,6 +121,6 @@ export function useFileOperations({
     newInvoice,
     saveInvoice,
     loadInvoice,
-    exportPDF,
+    // exportPDF removed - now handled by PrintPreviewModal
   };
 }

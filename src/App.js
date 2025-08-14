@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Navigation,
   QuotationDetails,
@@ -6,11 +6,14 @@ import {
   ClientInfo,
   TasksTable,
   PrintLayout,
+  PrintPreviewModal,
 } from "./components";
 import { useInvoiceState, useFileOperations } from "./hooks";
 import "./App.css";
 
 function App() {
+  // Print preview modal state
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   // Use optimized state management
   const {
     // State
@@ -42,7 +45,6 @@ function App() {
     newInvoice,
     saveInvoice,
     loadInvoice,
-    exportPDF,
   } = useFileOperations({
     hasUnsavedChanges,
     getSaveData,
@@ -51,6 +53,11 @@ function App() {
     setCurrentFilePath,
     setHasUnsavedChanges,
   });
+
+  // Handle print preview
+  const handlePrintPreview = () => {
+    setIsPrintPreviewOpen(true);
+  };
 
   return (
     <div className="app">
@@ -61,7 +68,7 @@ function App() {
         onNew={newInvoice}
         onSave={saveInvoice}
         onLoad={loadInvoice}
-        onExport={exportPDF}
+        onPrint={handlePrintPreview}
       />
 
       <div className="app-body">
@@ -107,6 +114,17 @@ function App() {
           baseRates={baseRates}
         />
       </div>
+      
+      {/* Print Preview Modal */}
+      <PrintPreviewModal
+        isOpen={isPrintPreviewOpen}
+        onClose={() => setIsPrintPreviewOpen(false)}
+        companyInfo={companyInfo}
+        clientInfo={clientInfo}
+        quotationDetails={quotationDetails}
+        tasks={tasks}
+        baseRates={baseRates}
+      />
     </div>
   );
 }

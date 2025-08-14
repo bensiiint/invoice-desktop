@@ -4,7 +4,7 @@ import {
   Building2,
   Save,
   FolderOpen,
-  Download,
+  Printer,
 } from "lucide-react";
 
 const Navigation = memo(({
@@ -13,7 +13,7 @@ const Navigation = memo(({
   onNew,
   onSave,
   onLoad,
-  onExport,
+  onPrint,
 }) => {
   return (
     <nav className="top-nav">
@@ -42,9 +42,9 @@ const Navigation = memo(({
           <FolderOpen className="action-icon" />
           <span>Load</span>
         </button>
-        <button className="action-button export" onClick={onExport}>
-          <Download className="action-icon" />
-          <span>Export</span>
+        <button className="action-button export" onClick={onPrint}>
+          <Printer className="action-icon" />
+          <span>Print</span>
         </button>
       </div>
     </nav>
