@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
@@ -181,6 +181,195 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
+// ==================================================
+// WINDOWS NATIVE PRINT SYSTEM IMPLEMENTATION
+// ==================================================
+
+// Helper function to convert mm to inches (Windows print system uses inches)
+function mmToInches(mm) {
+  return mm / 25.4;
+}
+
+// Helper function to get print margins in the correct format
+function getPrintMargins(options) {
+  if (options.margins && options.margins.marginType === 'custom') {
+    return {
+      marginType: 'custom',
+      top: mmToInches(options.margins.top || 5),
+      bottom: mmToInches(options.margins.bottom || 5),
+      left: mmToInches(options.margins.left || 5),
+      right: mmToInches(options.margins.right || 5)
+    };
+  }
+  
+  // Default margins
+  return {
+    marginType: 'default'
+  };
+}
+
+// IPC Handler: Windows Native Print Dialog
+ipcMain.handle('native-print', async (event, options = {}) => {
+  try {
+    console.log('Native print requested with options:', options);
+    
+    // Print options for Windows native dialog
+    const printOptions = {
+      silent: options.silent || false, // false = show Windows print dialog
+      printBackground: options.printBackground !== false, // default true
+      color: options.color !== false, // default true
+      margins: getPrintMargins(options),
+      landscape: options.landscape || false,
+      scaleFactor: options.scaleFactor || 100,
+      pagesPerSheet: options.pagesPerSheet || 1,
+      collate: options.collate !== false,
+      copies: options.copies || 1,
+      header: options.showHeaders ? options.header : '',
+      footer: options.showFooters ? options.footer : '',
+      pageSize: options.pageSize || 'A4'
+    };
+
+    console.log('Processed print options:', printOptions);
+
+    // Use Windows native print dialog
+    const result = await mainWindow.webContents.print(printOptions);
+    
+    if (result) {
+      console.log('Print job sent successfully');
+      return { success: true, message: 'Document sent to printer successfully' };
+    } else {
+      console.log('Print job was cancelled by user');
+      return { success: false, message: 'Print cancelled by user' };
+    }
+    
+  } catch (error) {
+    console.error('Native print failed:', error);
+    return { 
+      success: false, 
+      error: error.message,
+      message: 'Failed to print document. Please try again.' 
+    };
+  }
+});
+
+// IPC Handler: Windows Native PDF Generation
+ipcMain.handle('native-print-to-pdf', async (event, options = {}) => {
+  try {
+    console.log('Native PDF generation requested with options:', options);
+    
+    // PDF generation options using Windows native PDF engine
+    const pdfOptions = {
+      marginsType: 1, // Custom margins
+      pageSize: options.pageSize || 'A4',
+      printBackground: options.printBackground !== false,
+      printSelectionOnly: false,
+      landscape: options.landscape || false,
+      scaleFactor: options.scaleFactor || 100,
+      headerFooter: {
+        title: options.title || '',
+        url: ''
+      }
+    };
+
+    // Set custom margins if provided
+    if (options.margins && options.margins.marginType === 'custom') {
+      pdfOptions.margins = {
+        top: mmToInches(options.margins.top || 5),
+        bottom: mmToInches(options.margins.bottom || 5),
+        left: mmToInches(options.margins.left || 5),
+        right: mmToInches(options.margins.right || 5)
+      };
+    }
+
+    console.log('Processed PDF options:', pdfOptions);
+
+    // Generate PDF using Electron's native PDF engine (uses Windows printing system)
+    const pdfBuffer = await mainWindow.webContents.printToPDF(pdfOptions);
+    
+    // Show save dialog using Windows native file dialog
+    const defaultFilename = options.filename || `KMTI_Quotation_${new Date().toISOString().slice(0, 10)}.pdf`;
+    
+    const { filePath, canceled } = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save PDF',
+      defaultPath: defaultFilename,
+      filters: [
+        { name: 'PDF Files', extensions: ['pdf'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['createDirectory']
+    });
+
+    if (canceled || !filePath) {
+      console.log('PDF save cancelled by user');
+      return { success: false, message: 'PDF save cancelled' };
+    }
+
+    // Write PDF file
+    fs.writeFileSync(filePath, pdfBuffer);
+    
+    console.log('PDF saved successfully to:', filePath);
+    
+    // Show success dialog
+    await dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'PDF Saved',
+      message: 'PDF saved successfully!',
+      detail: `File saved to:\n${filePath}`,
+      buttons: ['OK']
+    });
+    
+    return { 
+      success: true, 
+      filePath: filePath,
+      message: 'PDF generated and saved successfully' 
+    };
+    
+  } catch (error) {
+    console.error('Native PDF generation failed:', error);
+    
+    // Show error dialog
+    await dialog.showErrorBox(
+      'PDF Generation Failed', 
+      `Failed to generate PDF: ${error.message}\n\nPlease try again or contact support if the problem persists.`
+    );
+    
+    return { 
+      success: false, 
+      error: error.message,
+      message: 'Failed to generate PDF. Please try again.' 
+    };
+  }
+});
+
+// IPC Handler: Get Available Printers (Windows native)
+ipcMain.handle('get-printers', async () => {
+  try {
+    const printers = await mainWindow.webContents.getPrintersAsync();
+    console.log('Available printers:', printers);
+    return { success: true, printers };
+  } catch (error) {
+    console.error('Failed to get printers:', error);
+    return { success: false, error: error.message, printers: [] };
+  }
+});
+
+// IPC Handler: Get Default Printer (Windows native)
+ipcMain.handle('get-default-printer', async () => {
+  try {
+    const printers = await mainWindow.webContents.getPrintersAsync();
+    const defaultPrinter = printers.find(printer => printer.isDefault);
+    console.log('Default printer:', defaultPrinter);
+    return { success: true, defaultPrinter };
+  } catch (error) {
+    console.error('Failed to get default printer:', error);
+    return { success: false, error: error.message, defaultPrinter: null };
+  }
+});
+
+// ==================================================
+// APP INITIALIZATION
+// ==================================================
+
 // Optimize app initialization
 app.whenReady().then(() => {
   createWindow();
@@ -188,6 +377,10 @@ app.whenReady().then(() => {
   // Performance: Enable hardware acceleration
   app.commandLine.appendSwitch('enable-gpu-rasterization');
   app.commandLine.appendSwitch('enable-zero-copy');
+  
+  // Enable high quality printing
+  app.commandLine.appendSwitch('enable-print-preview');
+  app.commandLine.appendSwitch('enable-pdf-plugin');
 });
 
 // Quit when all windows are closed
@@ -215,4 +408,12 @@ app.on('web-contents-created', (event, contents) => {
     delete webPreferences.preload;
     webPreferences.nodeIntegration = false;
   });
+});
+
+// Cleanup IPC handlers on app quit
+app.on('before-quit', () => {
+  ipcMain.removeAllListeners('native-print');
+  ipcMain.removeAllListeners('native-print-to-pdf');
+  ipcMain.removeAllListeners('get-printers');
+  ipcMain.removeAllListeners('get-default-printer');
 });

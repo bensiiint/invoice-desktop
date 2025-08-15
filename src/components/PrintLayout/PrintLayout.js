@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import Logo from './KmtiLogo.png'; // Adjust the path as necessary
 
 const PrintLayout = memo(({
   companyInfo,
@@ -34,7 +35,7 @@ const PrintLayout = memo(({
           <div className="logo-section">
             <div className="company-logo-circle">
               <img
-                src="/KmtiLogo.png"
+                src={Logo}
                 alt="Company Logo"
                 className="logo-image"
               />

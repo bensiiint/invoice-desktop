@@ -10,6 +10,7 @@ import {
   Settings
 } from 'lucide-react';
 import './PrintPreviewModal.css';
+import Logo from "./KmtiLogo.png"; // Adjust the path as necessary}
 
 // Paper size definitions (in mm)
 const PAPER_SIZES = {
@@ -109,95 +110,128 @@ const PrintPreviewModal = memo(({
     return `¥${amount.toLocaleString()}`;
   }, []);
 
-  // Handle print
+  // Handle print - Use Windows' native print dialog
   const handlePrint = useCallback(async () => {
     setIsProcessing(true);
     try {
-      // Apply print settings to document
-      const printStyles = `
-        @page {
-          size: ${settings.orientation === 'landscape' ? 'landscape' : 'portrait'};
-          margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-        }
-      `;
-      
-      // Create style element
-      const styleEl = document.createElement('style');
-      styleEl.textContent = printStyles;
-      document.head.appendChild(styleEl);
-      
-      // Trigger print
-      window.print();
-      
-      // Remove temporary styles
-      document.head.removeChild(styleEl);
+      // Check if we're in Electron
+      if (window.electronAPI) {
+        // Use Electron's native print
+        await window.electronAPI.print({
+          silent: false, // Show native Windows print dialog
+          printBackground: true,
+          color: true,
+          margins: {
+            marginType: 'custom',
+            top: margins.top,
+            bottom: margins.bottom,
+            left: margins.left,
+            right: margins.right
+          },
+          pageSize: settings.paperSize,
+          landscape: settings.orientation === 'landscape'
+        });
+      } else {
+        // Fallback to web print if not in Electron
+        const printStyles = `
+          @page {
+            size: ${settings.paperSize} ${settings.orientation};
+            margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+          }
+          @media print {
+            body * { visibility: hidden; }
+            .print-preview-modal, .print-preview-modal * { visibility: visible; }
+            .modal-backdrop, .settings-panel, .preview-info, .modal-header { display: none !important; }
+            .preview-content {
+              position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+              padding: 0 !important; transform: none !important; box-shadow: none !important;
+            }
+          }
+        `;
+        
+        const styleEl = document.createElement('style');
+        styleEl.textContent = printStyles;
+        document.head.appendChild(styleEl);
+        
+        window.print();
+        
+        setTimeout(() => {
+          if (styleEl.parentNode) document.head.removeChild(styleEl);
+        }, 1000);
+      }
       
     } catch (error) {
       console.error('Print failed:', error);
+      alert('Print failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
   }, [settings, margins]);
 
-  // Handle PDF download
+  // Handle PDF download - Use Windows' native PDF generation
   const handleDownloadPDF = useCallback(async () => {
     setIsProcessing(true);
     try {
-      // Dynamic import for html2pdf
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      const element = previewRef.current;
-      
-      // Add PDF-specific class only to the content element
-      if (element) {
-        element.classList.add('pdf-generation');
+      // Check if we're in Electron
+      if (window.electronAPI) {
+        // Use Electron's native PDF generation (Windows native)
+        await window.electronAPI.printToPDF({
+          margins: {
+            marginType: 'custom',
+            top: margins.top,
+            bottom: margins.bottom,
+            left: margins.left,
+            right: margins.right
+          },
+          pageSize: settings.paperSize,
+          landscape: settings.orientation === 'landscape',
+          printBackground: true,
+          color: true,
+          filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`
+        });
+        
+        alert('PDF saved successfully!');
+        
+      } else {
+        // Fallback: Open print dialog with instructions for web version
+        const printStyles = `
+          @page {
+            size: ${settings.paperSize} ${settings.orientation};
+            margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+          }
+          @media print {
+            body * { visibility: hidden; }
+            .print-preview-modal, .print-preview-modal * { visibility: visible; }
+            .modal-backdrop, .settings-panel, .preview-info, .modal-header { display: none !important; }
+            .preview-content {
+              position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+              padding: 0 !important; transform: none !important; box-shadow: none !important;
+            }
+          }
+        `;
+        
+        const styleEl = document.createElement('style');
+        styleEl.textContent = printStyles;
+        document.head.appendChild(styleEl);
+        
+        window.print();
+        
+        setTimeout(() => {
+          alert('💡 To save as PDF:\n\n1. In the print dialog, click "Destination"\n2. Select "Save as PDF"\n3. Click "Save"\n\nThis gives you perfect quality!');
+        }, 500);
+        
+        setTimeout(() => {
+          if (styleEl.parentNode) document.head.removeChild(styleEl);
+        }, 1000);
       }
-      
-      // Wait for styles to apply
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const opt = {
-        margin: [margins.top, margins.right, margins.bottom, margins.left],
-        filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`,
-        image: { 
-          type: 'jpeg', 
-          quality: 0.95
-        },
-        html2canvas: { 
-          scale: 2.5,
-          useCORS: true,
-          letterRendering: true,
-          allowTaint: false,
-          backgroundColor: '#ffffff',
-          width: paperDimensions.width * 3.78,
-          height: paperDimensions.height * 3.78,
-          scrollX: 0,
-          scrollY: 0
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: [paperDimensions.width, paperDimensions.height],
-          orientation: settings.orientation,
-          compress: true
-        },
-        pagebreak: { mode: 'avoid-all' }
-      };
-      
-      await html2pdf().set(opt).from(element).save();
       
     } catch (error) {
       console.error('PDF generation failed:', error);
-      // Fallback to print
-      handlePrint();
+      alert('PDF generation failed. Please try again.');
     } finally {
-      // Remove PDF-specific class
-      const element = previewRef.current;
-      if (element) {
-        element.classList.remove('pdf-generation');
-      }
       setIsProcessing(false);
     }
-  }, [quotationDetails.quotationNo, handlePrint, settings, paperDimensions, margins]);
+  }, [quotationDetails.quotationNo, settings, margins]);
 
   // Handle zoom
   const handleZoomIn = useCallback(() => {
@@ -329,7 +363,7 @@ const PrintPreviewModal = memo(({
                 className="action-button secondary"
               >
                 <Download size={16} />
-                Download PDF
+                {isProcessing ? 'Generating PDF...' : 'Download PDF'}
               </button>
             </div>
           </div>
@@ -366,7 +400,7 @@ const PrintPreviewModal = memo(({
                       <div className="logo-section">
                         <div className="company-logo-circle">
                           <img
-                            src="/KmtiLogo.png"
+                            src={Logo}
                             alt="Company Logo"
                             className="logo-image"
                           />
