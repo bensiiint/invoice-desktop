@@ -69,7 +69,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  max-height: 150px;
+  min-height: 150px; /* ✅ FIXED: Consistent height for layout stability */
 }
 
 .company-info-visual {
@@ -78,20 +78,25 @@
   margin-bottom: 15px; /* Reduced spacing for tighter layout */
   line-height: 1.7;
   position: relative; /* Keep in normal flow at top */
+  min-height: 95px; /* ✅ FIXED: Increased reserved space for consistent layout */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .company-name-info {
   font-size: 12px; /* Larger font for company name in address */
   font-weight: bold; /* Bold company name */
   margin-bottom: 3px;
+  min-height: 18px; /* ✅ FIXED: Reserve space for company name line */
 }
 
 .quotation-details-visual {
   font-size: 12px;
-  position: absolute;
-  top: 200px; /* Fixed position - back to reasonable value */
+  position: absolute; /* ✅ FIXED: Back to absolute for precise positioning */
+  top: 200px; /* ✅ FIXED: Moved even lower for better positioning */
   right: 0;
-  width: 100%;
+  width: 280px;
 }
 
 .detail-row-visual {
@@ -99,6 +104,7 @@
   justify-content: space-between;
   margin-bottom: 6px; /* More spacing between rows */
   align-items: center;
+  min-height: 20px; /* ✅ FIXED: Consistent row height */
 }
 
 .detail-label-visual {
@@ -112,23 +118,28 @@
   padding-bottom: 3px;
   text-align: center;
   font-size: 11px;
+  min-height: 16px; /* ✅ FIXED: Consistent height whether filled or empty */
+  display: inline-block;
 }
 
 /* Contact Section */
 .contact-section-visual {
   margin-bottom: 35px; /* Increased spacing to match image */
   margin-top: 0px;
+  min-height: 90px; /* ✅ FIXED: Reserve consistent space for client info */
 }
 
 .quotation-to-visual {
   font-size: 16px; /* Increased font size */
   font-weight: bold;
   margin-bottom: 10px; /* Adjusted spacing */
+  min-height: 22px; /* ✅ FIXED: Consistent label height */
 }
 
 .client-details-visual {
   font-size: 12px; /* Increased font size */
   line-height: 1.5; /* Better line spacing */
+  min-height: 60px; /* ✅ FIXED: Reserve space for client details */
 }
 
 .client-company-name {
