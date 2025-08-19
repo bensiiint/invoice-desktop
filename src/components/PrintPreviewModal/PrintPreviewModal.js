@@ -10,7 +10,8 @@ import {
   Settings
 } from 'lucide-react';
 import './PrintPreviewModal.css';
-import Logo from "./KmtiLogo.png"; // Adjust the path as necessary}
+import '../PrintLayout/VisualLayout.css';
+import Logo from "./KmtiLogo.png";
 
 // Paper size definitions (in mm)
 const PAPER_SIZES = {
@@ -79,46 +80,44 @@ const PrintPreviewModal = memo(({
     setSettings(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // Calculate preview scale to fit in container
+  // Calculate preview scale - MATCH PRINT LAYOUT SIZE
   const previewScale = useMemo(() => {
-    const containerHeight = 650; // Increased preview container height
-    const containerWidth = 500;  // Increased preview container width
-    
-    const scaleX = containerWidth / paperDimensions.width;
-    const scaleY = containerHeight / paperDimensions.height;
-    const baseScale = Math.min(scaleX, scaleY, 1) * 0.9; // 90% of available space for better fit
-    
+    // Match the actual print layout size - much larger scale
+    const baseScale = 1.0; // Full size to match print layout
     return baseScale * (settings.zoom / 100);
-  }, [paperDimensions, settings.zoom]);
+  }, [settings.zoom]);
 
   // Memoize calculations for print layout
-  const { taskTotals, grandTotal } = useMemo(() => {
+  const { taskTotals, grandTotal, overheadTotal } = useMemo(() => {
     const totals = tasks.map((task) => {
       const basicLabor = task.totalHours * baseRates.timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
-      const subtotal = basicLabor + overtime + software;
-      const overhead = subtotal * (baseRates.overheadPercentage / 100);
-      return basicLabor + overtime + software + overhead;
+      return basicLabor + overtime + software; // Task subtotal without overhead
     });
 
-    const grand = totals.reduce((sum, total) => sum + total, 0);
-    return { taskTotals: totals, grandTotal: grand };
+    const subtotalWithoutOverhead = totals.reduce((sum, total) => sum + total, 0);
+    const overhead = subtotalWithoutOverhead * (baseRates.overheadPercentage / 100);
+    const grand = subtotalWithoutOverhead + overhead;
+    
+    return { 
+      taskTotals: totals, 
+      grandTotal: grand,
+      overheadTotal: overhead
+    };
   }, [tasks, baseRates]);
 
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;
   }, []);
 
-  // Handle print - Use Windows' native print dialog
+  // Handle print
   const handlePrint = useCallback(async () => {
     setIsProcessing(true);
     try {
-      // Check if we're in Electron
       if (window.electronAPI) {
-        // Use Electron's native print
         await window.electronAPI.print({
-          silent: false, // Show native Windows print dialog
+          silent: false,
           printBackground: true,
           color: true,
           margins: {
@@ -132,34 +131,8 @@ const PrintPreviewModal = memo(({
           landscape: settings.orientation === 'landscape'
         });
       } else {
-        // Fallback to web print if not in Electron
-        const printStyles = `
-          @page {
-            size: ${settings.paperSize} ${settings.orientation};
-            margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-          }
-          @media print {
-            body * { visibility: hidden; }
-            .print-preview-modal, .print-preview-modal * { visibility: visible; }
-            .modal-backdrop, .settings-panel, .preview-info, .modal-header { display: none !important; }
-            .preview-content {
-              position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-              padding: 0 !important; transform: none !important; box-shadow: none !important;
-            }
-          }
-        `;
-        
-        const styleEl = document.createElement('style');
-        styleEl.textContent = printStyles;
-        document.head.appendChild(styleEl);
-        
         window.print();
-        
-        setTimeout(() => {
-          if (styleEl.parentNode) document.head.removeChild(styleEl);
-        }, 1000);
       }
-      
     } catch (error) {
       console.error('Print failed:', error);
       alert('Print failed. Please try again.');
@@ -168,13 +141,11 @@ const PrintPreviewModal = memo(({
     }
   }, [settings, margins]);
 
-  // Handle PDF download - Use Windows' native PDF generation
+  // Handle PDF download
   const handleDownloadPDF = useCallback(async () => {
     setIsProcessing(true);
     try {
-      // Check if we're in Electron
       if (window.electronAPI) {
-        // Use Electron's native PDF generation (Windows native)
         await window.electronAPI.printToPDF({
           margins: {
             marginType: 'custom',
@@ -189,42 +160,13 @@ const PrintPreviewModal = memo(({
           color: true,
           filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`
         });
-        
         alert('PDF saved successfully!');
-        
       } else {
-        // Fallback: Open print dialog with instructions for web version
-        const printStyles = `
-          @page {
-            size: ${settings.paperSize} ${settings.orientation};
-            margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-          }
-          @media print {
-            body * { visibility: hidden; }
-            .print-preview-modal, .print-preview-modal * { visibility: visible; }
-            .modal-backdrop, .settings-panel, .preview-info, .modal-header { display: none !important; }
-            .preview-content {
-              position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-              padding: 0 !important; transform: none !important; box-shadow: none !important;
-            }
-          }
-        `;
-        
-        const styleEl = document.createElement('style');
-        styleEl.textContent = printStyles;
-        document.head.appendChild(styleEl);
-        
         window.print();
-        
         setTimeout(() => {
-          alert('💡 To save as PDF:\n\n1. In the print dialog, click "Destination"\n2. Select "Save as PDF"\n3. Click "Save"\n\nThis gives you perfect quality!');
+          alert('💡 To save as PDF:\\n\\n1. In the print dialog, click "Destination"\\n2. Select "Save as PDF"\\n3. Click "Save"');
         }, 500);
-        
-        setTimeout(() => {
-          if (styleEl.parentNode) document.head.removeChild(styleEl);
-        }, 1000);
       }
-      
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('PDF generation failed. Please try again.');
@@ -374,200 +316,171 @@ const PrintPreviewModal = memo(({
               <div 
                 className="preview-page"
                 style={{
-                  width: `${paperDimensions.width}mm`,
-                  height: `${paperDimensions.height}mm`,
                   transform: `scale(${previewScale})`,
-                  transformOrigin: 'top left',
+                  transformOrigin: 'top center', /* Back to top center for horizontal centering */
                 }}
               >
                 <div 
-                ref={previewRef}
-                className={`preview-content ${margins.top === 0 ? 'no-margins' : ''}`}
-                style={{
-                  '--paper-width': `${paperDimensions.width}mm`,
-                  '--paper-height': `${paperDimensions.height}mm`,
-                  '--scale-factor': Math.min(paperDimensions.width / 210, paperDimensions.height / 297),
-                  '--margin-top': `${margins.top}mm`,
-                  '--margin-right': `${margins.right}mm`,
-                  '--margin-bottom': `${margins.bottom}mm`,
-                  '--margin-left': `${margins.left}mm`
-                }}
+                  ref={previewRef}
+                  className="preview-content"
                 >
-                  {/* Invoice Content - Exact Copy from PrintLayout */}
-                  <div className="quotation-paper-exact">
-                    {/* Logo and Header */}
-                    <div className="header-section">
-                      <div className="logo-section">
-                        <div className="company-logo-circle">
-                          <img
-                            src={Logo}
-                            alt="Company Logo"
-                            className="logo-image"
-                          />
+                  {/* SIMPLE VISUAL LAYOUT - EXACTLY WHAT YOU SEE */}
+                  <div className="quotation-visual-exact">
+                    
+                    {/* Header Section */}
+                    <div className="header-visual">
+                      {/* Logo */}
+                      <div className="logo-visual">
+                        <img src={Logo} alt="Company Logo" />
+                      </div>
+
+                      {/* Center Text */}
+                      <div className="center-text-visual">
+                        <div className="company-name-visual">
+                          KUSAKABE & MAENO<br/>
+                          TECH., INC
+                        </div>
+                        <div className="quotation-title-visual">
+                          Quotation
                         </div>
                       </div>
-                      <div className="header-text">
-                        <div className="company-name-header">
-                          KUSAKABE & MAENO TECH., INC
+
+                      {/* Right Details */}
+                      <div className="right-details-visual">
+                        <div className="company-info-visual">
+                          <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+                          {companyInfo.address}<br/>
+                          {companyInfo.city}<br/>
+                          {companyInfo.location}<br/>
+                          {companyInfo.phone}
                         </div>
-                        <div className="quotation-title">Quotation</div>
-                      </div>
-                      <div className="quotation-details-box">
-                        <div className="details-container">
-                          <div className="detail-line">
-                            <span className="detail-label">Quotation. NO.:</span>
-                            <span className="detail-value">
-                              {quotationDetails.quotationNo}
-                            </span>
+                        
+                        <div className="quotation-details-visual">
+                          <div className="detail-row-visual">
+                            <span className="detail-label-visual">Quotation No.:</span>
+                            <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
                           </div>
-                          <div className="detail-line">
-                            <span className="detail-label">REFERENCE NO.:</span>
-                            <span className="detail-value">
-                              {quotationDetails.referenceNo}
-                            </span>
+                          <div className="detail-row-visual">
+                            <span className="detail-label-visual">REFERENCE NO.:</span>
+                            <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
                           </div>
-                          <div className="detail-line">
-                            <span className="detail-label">DATE:</span>
-                            <span className="detail-value">
-                              {quotationDetails.date}
-                            </span>
+                          <div className="detail-row-visual">
+                            <span className="detail-label-visual">DATE:</span>
+                            <span className="detail-value-visual">{quotationDetails.date || ''}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className="contact-section">
-                      <div className="quotation-to">
-                        <div className="contact-header">Quotation to</div>
-                        <div className="contact-details">
-                          <div className="company-name">{clientInfo.company}</div>
-                          <div className="contact-person">{clientInfo.contact}</div>
-                          <div className="address-line">{clientInfo.address}</div>
-                          <div className="phone-line">{clientInfo.phone}</div>
-                        </div>
-                      </div>
-                      <div className="company-from">
-                        <div className="contact-header">{companyInfo.name}</div>
-                        <div className="from-details">
-                          <div className="from-address">{companyInfo.address}</div>
-                          <div className="from-address">{companyInfo.city}</div>
-                          <div className="from-address">{companyInfo.location}</div>
-                          <div className="from-phone">{companyInfo.phone}</div>
-                        </div>
+                    {/* Contact Section */}
+                    <div className="contact-section-visual">
+                      <div className="quotation-to-visual">Quotation to:</div>
+                      <div className="client-details-visual">
+                        <div className="client-company-name">{clientInfo.company}</div>
+                        <div className="client-person-name">{clientInfo.contact}</div>
+                        {clientInfo.address}<br/>
+                        {clientInfo.phone}
                       </div>
                     </div>
 
-                    {/* Items Table */}
-                    <table className="quotation-table-exact">
+                    {/* Table */}
+                    <table className="table-visual">
                       <thead>
-                        <tr className="table-header">
-                          <th className="col-no">No.</th>
-                          <th className="col-reference" colSpan="3">
-                            REFERENCE NUMBER
-                          </th>
+                        <tr>
+                          <th className="col-no">NO.</th>
+                          <th className="col-reference">REFERENCE NO.</th>
                           <th className="col-description">DESCRIPTION</th>
-                          <th className="col-unit">
-                            Unit
-                            <br />
-                            (Page)
-                          </th>
-                          <th className="col-type">Type</th>
-                          <th className="col-price" colSpan="2">
-                            Price
-                          </th>
+                          <th className="col-unit">UNIT<br/>(PAGE)</th>
+                          <th className="col-type">TYPE</th>
+                          <th className="col-price">PRICE</th>
                         </tr>
                       </thead>
                       <tbody>
+                        {/* Task rows */}
                         {tasks.map((task, index) => (
-                          <tr key={task.id} className="item-row">
-                            <td className="col-no">{index + 1}</td>
-                            <td className="col-reference" colSpan="3">
-                              {task.referenceNumber || "　"}
-                            </td>
-                            <td className="col-description">{task.description}</td>
-                            <td className="col-unit">
-                              {task.days > 0 ? task.days : "　"}
-                            </td>
-                            <td className="col-type">{task.unitType}</td>
-                            <td className="col-price" colSpan="2">
-                              {formatCurrency(taskTotals[index])}
-                            </td>
+                          <tr key={task.id}>
+                            <td>{index + 1}</td>
+                            <td>{task.referenceNumber || ''}</td>
+                            <td className="description-cell">{task.description}</td>
+                            <td>{task.days > 0 ? task.days : ''}</td>
+                            <td>3D</td>
+                            <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
                           </tr>
                         ))}
-                        {/* Empty rows to match template */}
-                        {Array.from(
-                          { length: Math.max(0, 8 - tasks.length) },
-                          (_, i) => (
-                            <tr key={`empty-${i}`} className="item-row">
-                              <td className="col-no">　</td>
-                              <td className="col-reference" colSpan="3">
-                                　
-                              </td>
-                              <td className="col-description">　</td>
-                              <td className="col-unit">　</td>
-                              <td className="col-type">　</td>
-                              <td className="col-price" colSpan="2">
-                                　
-                              </td>
-                            </tr>
-                          )
+                        
+                        {/* Administrative overhead row */}
+                        {baseRates.overheadPercentage > 0 && (
+                          <tr>
+                            <td>{tasks.length + 1}</td>
+                            <td>Administrative overhead</td>
+                            <td className="description-cell"></td>
+                            <td></td>
+                            <td></td>
+                            <td className="price-cell">{formatCurrency(overheadTotal)}</td>
+                          </tr>
                         )}
-                        <tr className="total-amount-row">
-                          <td colSpan="7" className="total-label">
-                            Total Amount
-                          </td>
-                          <td colSpan="2" className="total-value">
-                            {formatCurrency(grandTotal)}
-                          </td>
+                        
+                        {/* Empty rows to fill space */}
+                        {Array.from({ length: Math.max(0, 14 - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+                          <tr key={`empty-${i}`}>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                          </tr>
+                        ))}
+                        
+                        {/* Total row */}
+                        <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold'}}>
+                          <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
+                          <td className="price-cell">{formatCurrency(grandTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
 
                     {/* Terms */}
-                    <div className="terms-section">
-                      <p>
-                        Upon receipt of this quotation sheet, kindly send us one copy
-                        with your signature.
-                      </p>
-                      <p>
-                        The price will be changed without prior notice due to frequent
-                        changes of conversion rate.
-                      </p>
+                    <div className="terms-visual">
+                      Upon receipt of this quotation sheet, kindly send us one copy with your signature.<br/><br/>
+                      The price will be changed without prior notice due to frequent changes of conversion rate.
                     </div>
 
                     {/* Signatures */}
-                    <div className="signatures-section">
-                      <div className="signature-top-row">
-                        <div className="sig-group">
-                          <div className="sig-title">Prepared by:</div>
-                          <div className="sig-space"></div>
-                          <div className="sig-name">MR. MICHAEL PENAÑO</div>
-                          <div className="sig-role">Engineering Manager</div>
+                    <div className="signatures-visual">
+                      {/* First row - Prepared by */}
+                      <div className="signature-row-visual">
+                        <div className="signature-left-visual">
+                          <div className="sig-label-visual">Prepared by:</div>
+                          <div className="sig-line-visual"></div>
+                          <div className="sig-name-visual">MR. MICHAEL PENANO</div>
+                          <div className="sig-title-visual">Engineering Manager</div>
                         </div>
+                        <div className="signature-right-visual"></div>
                       </div>
-                      <div className="signature-bottom-row">
-                        <div className="sig-group">
-                          <div className="sig-title">Approved by:</div>
-                          <div className="sig-space"></div>
-                          <div className="sig-name">MR. YUICHIRO MAENO</div>
-                          <div className="sig-role">President</div>
+
+                      {/* Second row - Approved by & Received by */}
+                      <div className="signature-row-visual">
+                        <div className="signature-left-visual">
+                          <div className="sig-label-visual">Approved by:</div>
+                          <div className="sig-line-visual"></div>
+                          <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                          <div className="sig-title-visual">President</div>
                         </div>
-                        <div className="sig-group">
-                          <div className="sig-title">Received by:</div>
-                          <div className="sig-space"></div>
-                          <div className="sig-name">(Signature Over Printed Name)</div>
+                        <div className="signature-right-visual">
+                          <div className="sig-label-visual">Received by:</div>
+                          <div className="sig-line-visual"></div>
+                          <div className="sig-name-visual">(Signature Over Printed Name)</div>
                         </div>
                       </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="footer-section">
-                      <div className="footer-left">cc: admin/acctg/Engineering</div>
-                      <div className="footer-right">
-                        Admin Quotation Template v2.0-2016
-                      </div>
+                    <div className="footer-visual">
+                      <div>cc: admin/acctg/Engineering</div>
+                      <div>Admin Quotation Template v3.0-2025</div>
                     </div>
+
                   </div>
                 </div>
               </div>

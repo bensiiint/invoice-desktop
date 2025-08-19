@@ -576,9 +576,15 @@ body {
   color: white !important;
 }
 
-/* Print Only Layout - Hidden by default */
+/* Print Only Layout - Hidden by default, shown during print */
 .print-only-layout {
   display: none;
+}
+
+@media print {
+  .print-only-layout {
+    display: block !important;
+  }
 }
 
 /* Responsive Design */
@@ -648,11 +654,17 @@ body {
   }
 }
 
-/* Print Styles */
+/* Print Styles - Simplified for exact Figma layout */
 @media print {
   @page {
-    margin: 8mm;
+    margin: 0;
     size: A4;
+  }
+
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
   }
 
   .app {
@@ -660,336 +672,28 @@ body {
   }
 
   .top-nav {
-    display: none;
+    display: none !important;
   }
 
   .vertical-layout-content {
-    display: none;
+    display: none !important;
+  }
+
+  .app-body {
+    display: block !important;
   }
 
   .print-only-layout {
-    display: block;
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
     padding: 0;
     background: white;
-    margin: 0;
-    width: 100%;
-    max-width: none;
-  }
-
-  .quotation-paper-exact {
-    box-shadow: none;
-    border-radius: 0;
-    max-width: none;
-    min-height: auto;
-    padding: 5mm;
-    margin: 0;
-    width: 100%;
-    page-break-inside: avoid;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    background: white;
-  }
-
-  /* Print Header Section */
-  .header-section {
-    position: relative;
-    margin-bottom: 20px;
-    min-height: 95px;
-    display: block;
-    page-break-inside: avoid;
-  }
-
-  .logo-section {
-    position: absolute;
-    left: 5mm;
-    top: 3mm;
-    width: 28mm;
-    height: 28mm;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .logo-image {
-    width: 35mm;
-    height: 35mm;
-    object-fit: contain;
-  }
-
-  .header-text {
-    position: absolute;
-    left: 40mm;
-    top: 0mm;
-    right: 60mm;
-    text-align: center;
-    display: block;
-  }
-
-  .company-name-header {
-    font-size: 22pt;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 6pt;
-    letter-spacing: 0.5pt;
-    line-height: 1.1;
-  }
-
-  .quotation-title {
-    font-size: 22pt;
-    font-weight: 600;
-    color: #000;
-    letter-spacing: 0.3pt;
-    margin-left: 70px;
-  }
-
-  .quotation-details-box {
-    position: absolute;
-    right: 0mm;
-    top: 20mm;
-    width: 65mm;
-    display: block;
-  }
-
-  .detail-line {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 3pt;
-    font-size: 9pt;
-    align-items: center;
-  }
-
-  .detail-label {
-    font-weight: 600;
-    color: #000;
-  }
-
-  .detail-value {
-    color: #000;
-    font-weight: 500;
-    border-bottom: 1pt solid #000;
-    padding-bottom: 1pt;
-    min-width: 35mm;
-    text-align: left;
-  }
-
-  /* Print Contact Section */
-  .contact-section {
-    display: table;
-    width: 100%;
-    margin-bottom: 15pt;
-    margin-top: 70px;
-    border: 2pt solid #000;
-    border-collapse: collapse;
-  }
-
-  .quotation-to,
-  .company-from {
-    display: table-cell;
-    width: 50%;
-    padding: 8pt;
-    vertical-align: top;
-    border: 1pt solid #000;
-  }
-
-  .quotation-to {
-    border-right: 2pt solid #000;
-  }
-
-  .contact-header {
-    font-weight: bold;
-    font-size: 10pt;
-    margin-bottom: 6pt;
-    color: #000;
-    background: #f0f0f0;
-    padding: 3pt 6pt;
-    border-bottom: 1pt solid #000;
-    margin: -8pt -8pt 6pt -8pt;
-  }
-
-  .company-name {
-    font-weight: bold;
-    font-size: 11pt;
-    color: #000;
-    margin-bottom: 4pt;
-  }
-
-  .contact-person {
-    font-weight: 600;
-    font-size: 10pt;
-    margin-bottom: 4pt;
-    color: #000;
-  }
-
-  .address-line,
-  .phone-line,
-  .from-address,
-  .from-phone {
-    font-size: 9pt;
-    color: #000;
-    margin-bottom: 3pt;
-    line-height: 1.3;
-  }
-
-  /* Print Table */
-  .quotation-table-exact {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 12pt;
-    font-size: 9pt;
-    page-break-inside: avoid;
-  }
-
-  .quotation-table-exact th,
-  .quotation-table-exact td {
-    border: 1pt solid #000;
-    padding: 3pt 4pt;
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  .table-header th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-    font-size: 8pt;
-    text-transform: uppercase;
-    letter-spacing: 0.5pt;
-  }
-
-  .item-row .col-description {
-    text-align: left;
-    padding-left: 6pt;
-  }
-
-  .item-row .col-price {
-    text-align: right;
-    font-weight: 500;
-    padding-right: 6pt;
-  }
-
-  .total-amount-row {
-    background-color: #f0f0f0;
-    font-weight: bold;
-  }
-
-  .total-label {
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .total-value {
-    text-align: right;
-    font-weight: bold;
-    font-size: 10pt;
-    padding-right: 6pt;
-  }
-
-  /* Print Terms */
-  .terms-section {
-    margin-bottom: 15pt;
-    font-size: 9pt;
-    line-height: 1.4;
-  }
-
-  .terms-section p {
-    margin-bottom: 4pt;
-    color: #000;
-  }
-
-  /* Print Signatures */
-  .signatures-section {
-    margin-bottom: 12pt;
-    page-break-inside: avoid;
-  }
-
-  .signature-top-row {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 1.5rem;
-  }
-
-  .signature-bottom-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.2rem;
-  }
-
-  .sig-group {
-    text-align: center;
-    font-size: 9pt;
-    min-width: 240px;
-    max-width: 240px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .sig-title {
-    font-weight: normal;
-    margin-bottom: 12pt;
-    color: #000;
-    font-size: 10pt;
-    text-align: left;
-    width: 100%;
-  }
-
-  .sig-space {
-    height: 30pt;
-    border-bottom: 1pt solid #000;
-    margin-bottom: 6pt;
-    width: 55mm;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .sig-name {
-    font-weight: bold;
-    font-size: 10pt;
-    color: #000;
-    margin-bottom: 3pt;
-    text-align: center;
-    width: 100%;
-  }
-
-  .sig-role {
-    font-size: 8pt;
-    color: #000;
-    font-style: italic;
-    text-align: center;
-    width: 100%;
-  }
-
-  /* Print Footer */
-  .footer-section {
-    display: flex;
-    justify-content: space-between;
-    font-size: 8pt;
-    color: #000;
-    margin-top: 15pt;
-    padding-top: 8pt;
-    border-top: 1pt solid #ddd;
-  }
-
-  .footer-left,
-  .footer-right {
-    font-style: italic;
-  }
-
-  /* Ensure black text for print */
-  * {
-    color: #000 !important;
-    background: transparent !important;
-  }
-
-  .contact-header {
-    background: #f0f0f0 !important;
-  }
-
-  .table-header th {
-    background: #f0f0f0 !important;
-  }
-
-  .total-amount-row {
-    background: #f0f0f0 !important;
+    z-index: 9999;
   }
 }
 

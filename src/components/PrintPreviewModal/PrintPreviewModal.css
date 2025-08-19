@@ -24,9 +24,9 @@
 
 .modal-container {
   position: relative;
-  width: 95vw;
-  height: 90vh;
-  max-width: 1200px;
+  width: 98vw;
+  height: 98vh; /* Increased to accommodate larger preview */
+  max-width: 1600px; /* Increased max width */
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
@@ -248,12 +248,13 @@
 
 .preview-container {
   flex: 1;
-  padding: 40px;
+  padding: 10px; /* Reduced padding to give more space for larger content */
   overflow: auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   position: relative;
+  min-height: 800px; /* Increased height for larger content */
 }
 
 .preview-page {
@@ -263,16 +264,22 @@
     0 2px 4px rgba(0, 0, 0, 0.06),
     0 0 0 1px rgba(0, 0, 0, 0.05);
   position: relative;
-  margin: 20px;
-  overflow: hidden;
+  margin: 10px auto; /* Back to smaller margin since container has more padding */
+  overflow: visible;
+  border-radius: 4px;
+  width: fit-content;
+  height: fit-content;
 }
 
 .preview-content {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: visible; /* Allow content to show */
   position: relative;
-  padding: 5mm; /* UPDATED: Match exact print padding */
+  padding: 0; /* Remove padding to let Figma layout handle spacing */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for document layout */
 }
 
 /* Preview Info Bar */
@@ -680,21 +687,29 @@
   border-bottom: 1pt solid #000;
 }
 
-/* Print Header Section - EXACT MATCH */
+/* Right section absolute positioning */
+.preview-content .right-details-section {
+  position: absolute;
+  right: 0;
+  top: 5mm;
+  width: 70mm;
+}
+
+/* Print Header Section - ABSOLUTE POSITIONING FOR TRUE CENTER */
 .preview-content .header-section {
   position: relative;
   margin-bottom: 20px;
-  min-height: 95px;
-  display: block;
+  min-height: 150px;
+  display: block; /* Switch to block for absolute positioning */
   page-break-inside: avoid;
 }
 
 .preview-content .logo-section {
   position: absolute;
-  left: 5mm;
-  top: 3mm;
-  width: 28mm;
-  height: 28mm;
+  left: 0;
+  top: 0;
+  width: 35mm;
+  height: 35mm;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -708,22 +723,21 @@
 
 .preview-content .header-text {
   position: absolute;
-  left: 40mm;
-  top: 0mm;
-  right: 40mm;
+  left: 50%; /* Position at 50% of container width */
+  top: 50%;
+  transform: translate(-50%, -50%); /* Center exactly */
   text-align: center;
-  display: block;
-  width: auto;
+  z-index: 2;
 }
 
 .preview-content .company-name-header {
   font-size: 22pt;
   font-weight: bold;
   color: #000;
-  margin-bottom: 6pt;
+  margin-bottom: 8pt;
   letter-spacing: 0.5pt;
   line-height: 1.1;
-  white-space: nowrap;
+  white-space: pre-line; /* Allow line breaks for company name */
   writing-mode: horizontal-tb;
   text-orientation: mixed;
 }
@@ -734,6 +748,7 @@
   color: #000;
   letter-spacing: 0.3pt;
   margin-left: 0px;
+  margin-top: 0; /* Remove top margin for alignment */
   text-align: center;
   position: relative;
 }
@@ -741,7 +756,7 @@
 .preview-content .quotation-details-box {
   position: absolute;
   right: 0mm;
-  top: 20mm;
+  top: 45mm; /* Moved down independently of company info */
   width: 65mm;
   display: block;
 }

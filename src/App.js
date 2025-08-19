@@ -112,6 +112,7 @@ function App() {
           quotationDetails={quotationDetails}
           tasks={tasks}
           baseRates={baseRates}
+          isPreview={false}
         />
       </div>
       

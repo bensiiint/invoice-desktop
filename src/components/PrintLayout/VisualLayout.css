@@ -1,0 +1,253 @@
+/* SIMPLE VISUAL RECREATION - BASED ON SCREENSHOTS */
+
+.quotation-visual-exact {
+  width: 210mm;
+  height: 297mm;
+  background: white;
+  font-family: Arial, sans-serif;
+  color: black;
+  padding: 8mm; /* Reduced padding to match print layout */
+  box-sizing: border-box;
+  position: relative;
+  margin: 0;
+  overflow: visible;
+}
+
+/* Header Section */
+.header-visual {
+  display: block; /* Switch back to block for absolute positioning */
+  position: relative;
+  margin-bottom: 25px;
+  margin-top: 0;
+  min-height: 150px;
+}
+
+.logo-visual {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 125px;
+  height: 140px;
+}
+
+.logo-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.center-text-visual {
+  position: absolute;
+  left: 50%; /* Position at 50% of container width */
+  top: 50%;
+  transform: translate(-50%, -50%); /* Center exactly */
+  text-align: center;
+  white-space: nowrap; /* Prevent wrapping */
+  z-index: 2;
+}
+
+.company-name-visual {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  line-height: 1.1;
+  white-space: pre-line; /* Allow BR tags but prevent other wrapping */
+}
+
+.quotation-title-visual {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 45px;
+  white-space: nowrap;
+}
+
+.right-details-visual {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  max-height: 150px;
+}
+
+.company-info-visual {
+  font-size: 10px; /* Base font size for address */
+  text-align: right;
+  margin-bottom: 15px; /* Reduced spacing for tighter layout */
+  line-height: 1.4;
+  position: relative; /* Keep in normal flow at top */
+}
+
+.company-name-info {
+  font-size: 12px; /* Larger font for company name in address */
+  font-weight: bold; /* Bold company name */
+  margin-bottom: 3px;
+}
+
+.quotation-details-visual {
+  font-size: 12px;
+  position: absolute;
+  top: 193px; /* Fixed position - back to reasonable value */
+  right: 0;
+  width: 100%;
+}
+
+.detail-row-visual {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px; /* More spacing between rows */
+  align-items: center;
+}
+
+.detail-label-visual {
+  font-weight: bold;
+  font-size: 12px; /* Consistent font size */
+}
+
+.detail-value-visual {
+  border-bottom: 1px solid black; /* Thinner border */
+  min-width: 150px; /* Increased width */
+  padding-bottom: 3px;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* Contact Section */
+.contact-section-visual {
+  margin-bottom: 35px; /* Increased spacing to match image */
+  margin-top: 0px;
+}
+
+.quotation-to-visual {
+  font-size: 16px; /* Increased font size */
+  font-weight: bold;
+  margin-bottom: 10px; /* Adjusted spacing */
+}
+
+.client-details-visual {
+  font-size: 12px; /* Increased font size */
+  line-height: 1.5; /* Better line spacing */
+}
+
+.client-company-name {
+  font-weight: bold;
+}
+
+.client-person-name {
+  font-weight: bold;
+}
+
+/* Table Section */
+.table-visual {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 9px;
+}
+
+.table-visual th,
+.table-visual td {
+  border: 1px solid black;
+  padding: 5px 3px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-visual th {
+  font-weight: bold;
+  background-color: #f5f5f5;
+  font-size: 8px;
+}
+
+.table-visual .col-no { width: 5%; }
+.table-visual .col-reference { width: 20%; }
+.table-visual .col-description { width: 30%; text-align: left; }
+.table-visual .col-unit { width: 10%; }
+.table-visual .col-type { width: 10%; }
+.table-visual .col-price { width: 25%; text-align: right; }
+
+.table-visual .description-cell {
+  text-align: left;
+  padding-left: 8px;
+}
+
+.table-visual .price-cell {
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* Terms Section */
+.terms-visual {
+  font-size: 9px;
+  line-height: 1.4;
+  margin-bottom: 25px;
+}
+
+/* Signatures Section */
+.signatures-visual {
+  margin-bottom: 20px;
+}
+
+.signature-row-visual {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.signature-left-visual {
+  flex: 1;
+}
+
+.signature-right-visual {
+  flex: 1;
+}
+
+.sig-label-visual {
+  font-size: 10px;
+  margin-bottom: 15px;
+}
+
+.sig-line-visual {
+  border-bottom: 1px solid black;
+  width: 200px;
+  height: 30px;
+  margin-bottom: 5px;
+}
+
+.sig-name-visual {
+  font-weight: bold;
+  font-size: 11px;
+  text-align: center;
+  width: 200px;
+}
+
+.sig-title-visual {
+  font-size: 9px;
+  text-align: center;
+  width: 200px;
+  font-style: italic;
+}
+
+/* Footer */
+.footer-visual {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  font-style: italic;
+  color: #666;
+}
+
+/* Responsive scaling for preview - REMOVED TO MATCH PRINT LAYOUT SIZE */
+/* .quotation-visual-exact.preview-scale {
+  transform: scale(0.8);
+  transform-origin: top center;
+} */
+
+@media print {
+  .quotation-visual-exact {
+    transform: none !important;
+    margin: 0 !important;
+    padding: 8mm !important;
+  }
+}
