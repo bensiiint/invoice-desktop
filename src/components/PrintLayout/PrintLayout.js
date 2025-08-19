@@ -72,11 +72,11 @@ const PrintLayout = memo(({
                 <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
               </div>
               <div className="detail-row-visual">
-                <span className="detail-label-visual">REFERENCE NO.:</span>
+                <span className="detail-label-visual">Reference No.:</span>
                 <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
               </div>
               <div className="detail-row-visual">
-                <span className="detail-label-visual">DATE:</span>
+                <span className="detail-label-visual">Date:</span>
                 <span className="detail-value-visual">{quotationDetails.date || ''}</span>
               </div>
             </div>
@@ -131,8 +131,8 @@ const PrintLayout = memo(({
               </tr>
             )}
             
-            {/* Empty rows to fill space */}
-            {Array.from({ length: Math.max(0, 14 - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+            {/* Empty rows to fill space - default 10 rows total */}
+            {Array.from({ length: Math.max(0, 10 - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
               <tr key={`empty-${i}`}>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
@@ -144,7 +144,7 @@ const PrintLayout = memo(({
             ))}
             
             {/* Total row */}
-            <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold'}}>
+            <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
               <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
               <td className="price-cell">{formatCurrency(grandTotal)}</td>
             </tr>

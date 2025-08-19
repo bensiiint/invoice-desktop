@@ -1109,3 +1109,57 @@
     display: none;
   }
 }
+
+/* Signature positioning fixes for preview modal */
+.preview-content .signatures-visual {
+  margin-bottom: 20px;
+  position: relative; /* Add relative positioning for absolute children */
+}
+
+.preview-content .signature-row-visual {
+  display: flex;
+  margin-bottom: 20px;
+  position: relative;
+  min-height: 80px; /* Ensure enough height for absolute positioned elements */
+}
+
+.preview-content .signature-left-visual {
+  flex: 1;
+  max-width: 45%;
+}
+
+.preview-content .signature-right-visual {
+  position: absolute !important; /* Use absolute positioning */
+  right: 0 !important; /* Stick to right margin */
+  top: 0;
+  width: 250px !important; /* Fixed width for right section */
+  margin-left: 0 !important; /* Remove margin */
+  padding-left: 0 !important; /* Remove padding */
+}
+
+.preview-content .sig-label-visual {
+  font-size: 13px;
+  margin-bottom: 15px;
+  text-align: left !important; /* Left-align all labels including 'Received by' */
+}
+
+.preview-content .sig-line-visual {
+  border-bottom: 1px solid black;
+  width: 250px !important; /* Make signature lines longer */
+  height: 30px;
+  margin-bottom: 5px;
+}
+
+.preview-content .sig-name-visual {
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  width: 250px !important; /* Match longer line width */
+}
+
+.preview-content .sig-title-visual {
+  font-size: 11px;
+  text-align: center;
+  width: 250px !important; /* Match longer line width */
+  font-style: italic;
+}

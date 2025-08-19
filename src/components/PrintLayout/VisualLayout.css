@@ -25,7 +25,7 @@
 .logo-visual {
   position: absolute;
   left: 0;
-  top: 0;
+  top: 5px;
   width: 125px;
   height: 140px;
 }
@@ -47,7 +47,7 @@
 }
 
 .company-name-visual {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   margin-bottom: 10px;
   line-height: 1.1;
@@ -64,7 +64,7 @@
 .right-details-visual {
   position: absolute;
   right: 0;
-  top: 10px;
+  top: 5px;
   width: 280px;
   display: flex;
   flex-direction: column;
@@ -73,10 +73,10 @@
 }
 
 .company-info-visual {
-  font-size: 10px; /* Base font size for address */
+  font-size: 9px; /* Base font size for address */
   text-align: right;
   margin-bottom: 15px; /* Reduced spacing for tighter layout */
-  line-height: 1.4;
+  line-height: 1.7;
   position: relative; /* Keep in normal flow at top */
 }
 
@@ -89,7 +89,7 @@
 .quotation-details-visual {
   font-size: 12px;
   position: absolute;
-  top: 193px; /* Fixed position - back to reasonable value */
+  top: 200px; /* Fixed position - back to reasonable value */
   right: 0;
   width: 100%;
 }
@@ -97,7 +97,7 @@
 .detail-row-visual {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px; /* More spacing between rows */
+  margin-bottom: 6px; /* More spacing between rows */
   align-items: center;
 }
 
@@ -144,7 +144,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .table-visual th,
@@ -158,15 +158,15 @@
 .table-visual th {
   font-weight: bold;
   background-color: #f5f5f5;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .table-visual .col-no { width: 5%; }
 .table-visual .col-reference { width: 20%; }
-.table-visual .col-description { width: 30%; text-align: left; }
-.table-visual .col-unit { width: 10%; }
-.table-visual .col-type { width: 10%; }
-.table-visual .col-price { width: 25%; text-align: right; }
+.table-visual .col-description { width: 30%; text-align: center; }
+.table-visual .col-unit { width: 6%; }
+.table-visual .col-type { width: 6%; }
+.table-visual .col-price { width: 25%; text-align: center; }
 
 .table-visual .description-cell {
   text-align: left;
@@ -180,52 +180,61 @@
 
 /* Terms Section */
 .terms-visual {
-  font-size: 9px;
-  line-height: 1.4;
-  margin-bottom: 25px;
+  font-size: 13px;
+  line-height: 1;
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
 
 /* Signatures Section */
 .signatures-visual {
   margin-bottom: 20px;
+  position: relative; /* Add relative positioning for absolute children */
 }
 
 .signature-row-visual {
   display: flex;
   margin-bottom: 20px;
+  position: relative;
+  min-height: 80px; /* Ensure enough height for absolute positioned elements */
 }
 
 .signature-left-visual {
   flex: 1;
+  max-width: 45%;
 }
 
 .signature-right-visual {
-  flex: 1;
+  position: absolute; /* Use absolute positioning */
+  right: 0; /* Stick to right margin */
+  top: 0;
+  width: 250px; /* Fixed width for right section */
 }
 
 .sig-label-visual {
-  font-size: 10px;
+  font-size: 13px;
   margin-bottom: 15px;
+  text-align: left; /* Left-align all labels including 'Received by' */
 }
 
 .sig-line-visual {
   border-bottom: 1px solid black;
-  width: 200px;
+  width: 250px; /* Make signature lines longer */
   height: 30px;
   margin-bottom: 5px;
 }
 
 .sig-name-visual {
   font-weight: bold;
-  font-size: 11px;
+  font-size: 14px;
   text-align: center;
-  width: 200px;
+  width: 250px; /* Match longer line width */
 }
 
 .sig-title-visual {
-  font-size: 9px;
+  font-size: 11px;
   text-align: center;
-  width: 200px;
+  width: 250px; /* Match longer line width */
   font-style: italic;
 }
 
@@ -233,9 +242,10 @@
 .footer-visual {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: 10px;
   font-style: italic;
   color: #666;
+  margin-top: 50px;
 }
 
 /* Responsive scaling for preview - REMOVED TO MATCH PRINT LAYOUT SIZE */
