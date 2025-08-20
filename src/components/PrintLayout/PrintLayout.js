@@ -2,14 +2,18 @@ import React, { memo, useMemo } from 'react';
 import Logo from './KmtiLogo.png';
 import './VisualLayout.css';
 
-const PrintLayout = memo(({
-  companyInfo,
-  clientInfo,
-  quotationDetails,
-  tasks,
-  baseRates,
-  isPreview = false
+const PrintLayout = memo(({ 
+companyInfo,
+clientInfo,
+quotationDetails,
+tasks,
+baseRates,
+isPreview = false
 }) => {
+  // Calculate actual task count including overhead
+  const actualTaskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0);
+  const maxRows = actualTaskCount > 10 ? Math.min(actualTaskCount, 20) : 10; // Dynamic max rows
+
   // Memoize calculations
   const { taskTotals, grandTotal, overheadTotal } = useMemo(() => {
     const totals = tasks.map((task) => {
@@ -36,7 +40,7 @@ const PrintLayout = memo(({
 
   return (
     <div className="print-only-layout">
-      <div className={`quotation-visual-exact ${isPreview ? 'preview-scale' : ''}`}>
+      <div className={`quotation-visual-exact task-count-${actualTaskCount} ${isPreview ? 'preview-scale' : ''}`}>
         
         {/* Header Section */}
         <div className="header-visual">
@@ -131,8 +135,8 @@ const PrintLayout = memo(({
               </tr>
             )}
             
-            {/* Empty rows to fill space - default 10 rows total */}
-            {Array.from({ length: Math.max(0, 10 - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+            {/* Empty rows to fill space - dynamic based on phase */}
+            {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
               <tr key={`empty-${i}`}>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>

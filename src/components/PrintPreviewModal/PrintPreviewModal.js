@@ -88,7 +88,7 @@ const PrintPreviewModal = memo(({
   }, [settings.zoom]);
 
   // Memoize calculations for print layout
-  const { taskTotals, grandTotal, overheadTotal } = useMemo(() => {
+  const { taskTotals, grandTotal, overheadTotal, actualTaskCount, maxRows } = useMemo(() => {
     const totals = tasks.map((task) => {
       const basicLabor = task.totalHours * baseRates.timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
@@ -100,10 +100,16 @@ const PrintPreviewModal = memo(({
     const overhead = subtotalWithoutOverhead * (baseRates.overheadPercentage / 100);
     const grand = subtotalWithoutOverhead + overhead;
     
+    // Calculate task count and max rows
+    const taskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0);
+    const rows = taskCount > 10 ? Math.min(taskCount, 20) : 10;
+    
     return { 
       taskTotals: totals, 
       grandTotal: grand,
-      overheadTotal: overhead
+      overheadTotal: overhead,
+      actualTaskCount: taskCount,
+      maxRows: rows
     };
   }, [tasks, baseRates]);
 
@@ -325,7 +331,7 @@ const PrintPreviewModal = memo(({
                   className="preview-content"
                 >
                   {/* SIMPLE VISUAL LAYOUT - EXACTLY WHAT YOU SEE */}
-                  <div className="quotation-visual-exact">
+                  <div className={`quotation-visual-exact task-count-${actualTaskCount}`}>
                     
                     {/* Header Section */}
                     <div className="header-visual">
@@ -420,8 +426,8 @@ const PrintPreviewModal = memo(({
                           </tr>
                         )}
                         
-                        {/* Empty rows to fill space */}
-                        {Array.from({ length: Math.max(0, 10 - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+                        {/* Empty rows to fill space - dynamic based on phase */}
+                        {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
                           <tr key={`empty-${i}`}>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
