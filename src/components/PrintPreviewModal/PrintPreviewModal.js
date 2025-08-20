@@ -2,39 +2,12 @@ import React, { memo, useState, useMemo, useCallback, useRef } from 'react';
 import { 
   X, 
   Printer, 
-  Download, 
-  ZoomIn, 
-  ZoomOut,
-  RotateCw,
-  FileText,
-  Settings
+  Download,
+  FileText
 } from 'lucide-react';
 import './PrintPreviewModal.css';
 import '../PrintLayout/VisualLayout.css';
 import Logo from "./KmtiLogo.png";
-
-// Paper size definitions (in mm)
-const PAPER_SIZES = {
-  'A4': { width: 210, height: 297, label: 'A4 (210 × 297 mm)' },
-  'A3': { width: 297, height: 420, label: 'A3 (297 × 420 mm)' },
-  'Letter': { width: 216, height: 279, label: 'Letter (8.5 × 11 in)' },
-  'Legal': { width: 216, height: 356, label: 'Legal (8.5 × 14 in)' },
-  'A5': { width: 148, height: 210, label: 'A5 (148 × 210 mm)' },
-};
-
-const ORIENTATIONS = {
-  portrait: 'Portrait',
-  landscape: 'Landscape'
-};
-
-const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200];
-
-const MARGIN_PRESETS = {
-  none: { top: 0, right: 0, bottom: 0, left: 0, label: 'None' },
-  minimum: { top: 2, right: 2, bottom: 2, left: 2, label: 'Minimum' },
-  default: { top: 5, right: 5, bottom: 5, left: 5, label: 'Default' },
-  maximum: { top: 8, right: 8, bottom: 8, left: 8, label: 'Maximum' },
-};
 
 const PrintPreviewModal = memo(({ 
   isOpen, 
@@ -45,47 +18,37 @@ const PrintPreviewModal = memo(({
   tasks,
   baseRates 
 }) => {
-  // State for print settings
-  const [settings, setSettings] = useState({
+  const [isProcessing, setIsProcessing] = useState(false);
+  const previewRef = useRef(null);
+
+  // Fixed settings for A4 paper
+  const settings = {
     paperSize: 'A4',
     orientation: 'portrait',
     margins: 'default',
     zoom: 100,
     showHeaders: true,
     showFooters: true,
-  });
+  };
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const previewRef = useRef(null);
-
-  // Calculate paper dimensions
+  // Calculate paper dimensions (always A4 portrait)
   const paperDimensions = useMemo(() => {
-    const paper = PAPER_SIZES[settings.paperSize];
-    const isLandscape = settings.orientation === 'landscape';
-    
     return {
-      width: isLandscape ? paper.height : paper.width,
-      height: isLandscape ? paper.width : paper.height,
-      label: paper.label
+      width: 210,
+      height: 297,
+      label: 'A4 (210 × 297 mm)'
     };
-  }, [settings.paperSize, settings.orientation]);
-
-  // Calculate margins
-  const margins = useMemo(() => {
-    return MARGIN_PRESETS[settings.margins];
-  }, [settings.margins]);
-
-  // Update setting
-  const updateSetting = useCallback((key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // Calculate preview scale - MATCH PRINT LAYOUT SIZE
+  // Calculate margins (always default)
+  const margins = useMemo(() => {
+    return { top: 5, right: 5, bottom: 5, left: 5, label: 'Default' };
+  }, []);
+
+  // Calculate preview scale - fixed at 100%
   const previewScale = useMemo(() => {
-    // Match the actual print layout size - much larger scale
-    const baseScale = 1.0; // Full size to match print layout
-    return baseScale * (settings.zoom / 100);
-  }, [settings.zoom]);
+    return 1.0;
+  }, []);
 
   // Memoize calculations for print layout
   const { taskTotals, grandTotal, overheadTotal, actualTaskCount, maxRows } = useMemo(() => {
@@ -100,8 +63,8 @@ const PrintPreviewModal = memo(({
     const overhead = subtotalWithoutOverhead * (baseRates.overheadPercentage / 100);
     const grand = subtotalWithoutOverhead + overhead;
     
-    // Calculate task count and max rows
-    const taskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0);
+    // Calculate task count and max rows (including nothing follow row)
+    const taskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
     const rows = taskCount > 10 ? Math.min(taskCount, 20) : 10;
     
     return { 
@@ -128,13 +91,13 @@ const PrintPreviewModal = memo(({
           color: true,
           margins: {
             marginType: 'custom',
-            top: margins.top,
-            bottom: margins.bottom,
-            left: margins.left,
-            right: margins.right
+            top: 5,
+            bottom: 5,
+            left: 5,
+            right: 5
           },
-          pageSize: settings.paperSize,
-          landscape: settings.orientation === 'landscape'
+          pageSize: 'A4',
+          landscape: false
         });
       } else {
         window.print();
@@ -145,7 +108,7 @@ const PrintPreviewModal = memo(({
     } finally {
       setIsProcessing(false);
     }
-  }, [settings, margins]);
+  }, []);
 
   // Handle PDF download
   const handleDownloadPDF = useCallback(async () => {
@@ -155,13 +118,13 @@ const PrintPreviewModal = memo(({
         await window.electronAPI.printToPDF({
           margins: {
             marginType: 'custom',
-            top: margins.top,
-            bottom: margins.bottom,
-            left: margins.left,
-            right: margins.right
+            top: 5,
+            bottom: 5,
+            left: 5,
+            right: 5
           },
-          pageSize: settings.paperSize,
-          landscape: settings.orientation === 'landscape',
+          pageSize: 'A4',
+          landscape: false,
           printBackground: true,
           color: true,
           filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`
@@ -179,22 +142,7 @@ const PrintPreviewModal = memo(({
     } finally {
       setIsProcessing(false);
     }
-  }, [quotationDetails.quotationNo, settings, margins]);
-
-  // Handle zoom
-  const handleZoomIn = useCallback(() => {
-    const currentIndex = ZOOM_LEVELS.indexOf(settings.zoom);
-    if (currentIndex < ZOOM_LEVELS.length - 1) {
-      updateSetting('zoom', ZOOM_LEVELS[currentIndex + 1]);
-    }
-  }, [settings.zoom, updateSetting]);
-
-  const handleZoomOut = useCallback(() => {
-    const currentIndex = ZOOM_LEVELS.indexOf(settings.zoom);
-    if (currentIndex > 0) {
-      updateSetting('zoom', ZOOM_LEVELS[currentIndex - 1]);
-    }
-  }, [settings.zoom, updateSetting]);
+  }, [quotationDetails.quotationNo]);
 
   if (!isOpen) return null;
 
@@ -208,122 +156,38 @@ const PrintPreviewModal = memo(({
             <Printer className="title-icon" />
             <h2>Print Preview</h2>
           </div>
-          <button onClick={onClose} className="close-button">
-            <X size={20} />
-          </button>
+          <div className="modal-header-actions">
+            <button 
+              onClick={handlePrint}
+              disabled={isProcessing}
+              className="action-button primary"
+            >
+              <Printer size={14} />
+              {isProcessing ? 'Processing...' : 'Print'}
+            </button>
+            <button 
+              onClick={handleDownloadPDF}
+              disabled={isProcessing}
+              className="action-button export"
+            >
+              <Download size={14} />
+              {isProcessing ? 'Generating PDF...' : 'Download PDF'}
+            </button>
+            <button onClick={onClose} className="close-button">
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="modal-body">
-          {/* Settings Panel */}
-          <div className="settings-panel">
-            <div className="settings-section">
-              <h3>
-                <Settings size={16} />
-                Print Settings
-              </h3>
-              
-              {/* Paper Size */}
-              <div className="setting-group">
-                <label>Paper Size</label>
-                <select 
-                  value={settings.paperSize} 
-                  onChange={(e) => updateSetting('paperSize', e.target.value)}
-                  className="setting-select"
-                >
-                  {Object.entries(PAPER_SIZES).map(([key, size]) => (
-                    <option key={key} value={key}>{size.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Orientation */}
-              <div className="setting-group">
-                <label>Orientation</label>
-                <select 
-                  value={settings.orientation} 
-                  onChange={(e) => updateSetting('orientation', e.target.value)}
-                  className="setting-select"
-                >
-                  {Object.entries(ORIENTATIONS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Margins */}
-              <div className="setting-group">
-                <label>Margins</label>
-                <select 
-                  value={settings.margins} 
-                  onChange={(e) => updateSetting('margins', e.target.value)}
-                  className="setting-select"
-                >
-                  {Object.entries(MARGIN_PRESETS).map(([key, margin]) => (
-                    <option key={key} value={key}>{margin.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Zoom Controls */}
-              <div className="setting-group">
-                <label>Zoom</label>
-                <div className="zoom-controls">
-                  <button 
-                    onClick={handleZoomOut} 
-                    disabled={settings.zoom <= ZOOM_LEVELS[0]}
-                    className="zoom-button"
-                  >
-                    <ZoomOut size={16} />
-                  </button>
-                  <select 
-                    value={settings.zoom} 
-                    onChange={(e) => updateSetting('zoom', parseInt(e.target.value))}
-                    className="zoom-select"
-                  >
-                    {ZOOM_LEVELS.map(zoom => (
-                      <option key={zoom} value={zoom}>{zoom}%</option>
-                    ))}
-                  </select>
-                  <button 
-                    onClick={handleZoomIn} 
-                    disabled={settings.zoom >= ZOOM_LEVELS[ZOOM_LEVELS.length - 1]}
-                    className="zoom-button"
-                  >
-                    <ZoomIn size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="action-buttons">
-              <button 
-                onClick={handlePrint}
-                disabled={isProcessing}
-                className="action-button primary"
-              >
-                <Printer size={16} />
-                {isProcessing ? 'Processing...' : 'Print'}
-              </button>
-              <button 
-                onClick={handleDownloadPDF}
-                disabled={isProcessing}
-                className="action-button secondary"
-              >
-                <Download size={16} />
-                {isProcessing ? 'Generating PDF...' : 'Download PDF'}
-              </button>
-            </div>
-          </div>
-
-          {/* Preview Panel */}
-          <div className="preview-panel">
+          {/* Preview Panel - Full Width */}
+          <div className="preview-panel-full">
             <div className="preview-container">
               <div 
                 className="preview-page"
                 style={{
                   transform: `scale(${previewScale})`,
-                  transformOrigin: 'top center', /* Back to top center for horizontal centering */
+                  transformOrigin: 'top center',
                 }}
               >
                 <div 
@@ -409,7 +273,7 @@ const PrintPreviewModal = memo(({
                             <td>{task.referenceNumber || ''}</td>
                             <td className="description-cell">{task.description}</td>
                             <td>{task.days > 0 ? task.days : ''}</td>
-                            <td>3D</td>
+                            <td>{task.type || '3D'}</td>
                             <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
                           </tr>
                         ))}
@@ -417,7 +281,7 @@ const PrintPreviewModal = memo(({
                         {/* Administrative overhead row */}
                         {baseRates.overheadPercentage > 0 && (
                           <tr>
-                            <td>{tasks.length + 1}</td>
+                            <td></td>
                             <td>Administrative overhead</td>
                             <td className="description-cell"></td>
                             <td></td>
@@ -426,8 +290,18 @@ const PrintPreviewModal = memo(({
                           </tr>
                         )}
                         
-                        {/* Empty rows to fill space - dynamic based on phase */}
-                        {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+                        {/* Nothing Follow row - security feature */}
+                        <tr>
+                          <td></td>
+                          <td></td>
+                          <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        
+                        {/* Empty rows to fill space - dynamic based on phase (reduced by 1 for nothing follow row) */}
+                        {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
                           <tr key={`empty-${i}`}>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
@@ -496,9 +370,9 @@ const PrintPreviewModal = memo(({
             <div className="preview-info">
               <span className="page-info">
                 <FileText size={14} />
-                Page 1 of 1 • {paperDimensions.label} • {settings.orientation}
+                Page 1 of 1 • A4 Portrait
               </span>
-              <span className="zoom-info">{settings.zoom}% zoom</span>
+              <span className="zoom-info">100% zoom</span>
             </div>
           </div>
         </div>

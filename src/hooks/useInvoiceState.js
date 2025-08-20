@@ -61,6 +61,7 @@ export function useInvoiceState() {
       totalHours: 40,
       overtimeHours: 3,
       softwareUnits: 43,
+      type: "3D",
       unitType: "JD",
     },
     {
@@ -71,6 +72,7 @@ export function useInvoiceState() {
       totalHours: 0,
       overtimeHours: 0,
       softwareUnits: 0,
+      type: "3D",
       unitType: "LS",
     },
   ]);
@@ -132,6 +134,7 @@ export function useInvoiceState() {
       totalHours: 0,
       overtimeHours: 0,
       softwareUnits: 0,
+      type: "3D",
       unitType: "JD",
     };
     setTasks(prev => [...prev, newTask]);
@@ -223,6 +226,7 @@ export function useInvoiceState() {
         totalHours: 0,
         overtimeHours: 0,
         softwareUnits: 0,
+        type: "3D",
         unitType: "JD",
       },
     ]);
@@ -272,6 +276,7 @@ export function useInvoiceState() {
         totalHours: 0,
         overtimeHours: 0,
         softwareUnits: 0,
+        type: "3D",
         unitType: "JD",
       },
     ]);

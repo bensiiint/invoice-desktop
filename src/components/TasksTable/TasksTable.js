@@ -13,6 +13,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
         <strong>Value Basis</strong>
       </td>
       <td className="basis-value-cell">-</td>
+      <td className="basis-value-cell">-</td>
       <td className="basis-value-cell">
         <input
           type="number"
@@ -74,6 +75,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
           <span className="percentage-symbol">%</span>
         </div>
       </td>
+      <td className="basis-value-cell">-</td>
       <td className="total-cell basis-total">
         <strong>Base Rates</strong>
       </td>
@@ -100,6 +102,15 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
           onChange={(e) => handleUpdate('description', e.target.value)}
           className="table-input description-input"
           placeholder="Task description"
+        />
+      </td>
+      <td className="reference-cell">
+        <input
+          type="text"
+          value={task.referenceNumber || ''}
+          onChange={(e) => handleUpdate('referenceNumber', e.target.value)}
+          className="table-input reference-input"
+          placeholder="Ref No"
         />
       </td>
       <td>
@@ -145,6 +156,46 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
       </td>
       <td className="calculated-cell overhead-bg">
         {formatCurrency(subtotals.overhead)}
+      </td>
+      <td className="type-cell">
+        {(task.type === '2D' || task.type === '3D' || task.type === undefined || task.type === null) ? (
+          // Show dropdown for standard types
+          <select
+            value={task.type || '3D'}
+            onChange={(e) => {
+              if (e.target.value === 'Others') {
+                handleUpdate('type', 'Custom');
+              } else {
+                handleUpdate('type', e.target.value);
+              }
+            }}
+            className="table-input type-select"
+          >
+            <option value="2D">2D</option>
+            <option value="3D">3D</option>
+            <option value="Others">Others...</option>
+          </select>
+        ) : (
+          // Show input for custom type with option to go back to dropdown
+          <div className="custom-type-container">
+            <input
+              type="text"
+              value={task.type === 'Custom' ? '' : task.type}
+              onChange={(e) => handleUpdate('type', e.target.value)}
+              className="table-input custom-type-input"
+              placeholder="Specify type"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => handleUpdate('type', '3D')}
+              className="reset-type-button"
+              title="Back to dropdown"
+            >
+              ↺
+            </button>
+          </div>
+        )}
       </td>
       <td className="total-cell">{formatCurrency(subtotals.total)}</td>
       <td className="action-cell">
@@ -229,6 +280,7 @@ const TasksTable = memo(({
             <thead>
               <tr>
                 <th>Description</th>
+                <th>Ref No</th>
                 <th>Days</th>
                 <th>Hr</th>
                 <th>Time Charge</th>
@@ -236,6 +288,7 @@ const TasksTable = memo(({
                 <th>Overtime</th>
                 <th>Software</th>
                 <th>OH</th>
+                <th>Type</th>
                 <th>Total</th>
                 <th>Action</th>
               </tr>
@@ -256,7 +309,7 @@ const TasksTable = memo(({
             </tbody>
             <tfoot>
               <tr className="grand-total-row">
-                <td colSpan="8" className="grand-total-label-cell">
+                <td colSpan="10" className="grand-total-label-cell">
                   <strong>Grand Total</strong>
                 </td>
                 <td className="grand-total-value-cell">

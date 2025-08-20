@@ -317,7 +317,7 @@
 
 .center-text-visual {
   position: absolute;
-  left: 43%; /* Position at 50% of container width */
+  left: 40%; /* Position at 50% of container width */
   top: 60%;
   transform: translate(-50%, -50%); /* Center exactly */
   text-align: center;
@@ -326,7 +326,7 @@
 }
 
 .company-name-visual {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: bold;
   margin-bottom: 10px;
   line-height: 1.1;
@@ -335,7 +335,7 @@
 
 .quotation-title-visual {
   font-size: 26px;
-  font-weight: semi-bold;
+  font-weight: bold;
   margin-top: 45px;
   white-space: nowrap;
 }
@@ -343,8 +343,8 @@
 .right-details-visual {
   position: absolute;
   right: 0;
-  top: 16px;
-  width: 260px;
+  top: 19px;
+  width: 280px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -354,10 +354,10 @@
 .company-info-visual {
   font-size: 12px; /* Base font size for address */
   text-align: right;
-  margin-bottom: 15px; /* Reduced spacing for tighter layout */
-  line-height: 1.7;
-  position: relative; /* Keep in normal flow at top */
-  min-height: 95px; /* ✅ FIXED: Increased reserved space for consistent layout */
+  margin-bottom: 25px; /* Increased spacing to separate from quotation details */
+  line-height: 1.4; /* Tighter line spacing */
+  position: relative;
+  min-height: auto; /* Remove fixed height to allow natural flow */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -366,14 +366,14 @@
 .company-name-info {
   font-size: 12px; /* Larger font for company name in address */
   font-weight: bold; /* Bold company name */
-  margin-bottom: 3px;
-  min-height: 18px; /* ✅ FIXED: Reserve space for company name line */
+  margin-bottom: 0px; /* Reduced spacing */
+  min-height: auto; /* Remove fixed height */
 }
 
 .quotation-details-visual {
   font-size: 12px;
-  position: absolute; /* ✅ FIXED: Back to absolute for precise positioning */
-  top: 200px; /* ✅ FIXED: Moved even lower for better positioning */
+  position: absolute;
+  top: 190px; /* Moved up from 200px to be closer to company info */
   right: 0;
   width: 280px;
 }
@@ -466,6 +466,15 @@
 .table-visual .price-cell {
   text-align: right;
   padding-right: 8px;
+}
+
+/* Nothing Follow row styling */
+.table-visual .nothing-follow {
+  text-align: center !important;
+  font-weight: bold;
+  font-style: italic;
+  color: #666;
+  letter-spacing: 1px;
 }
 
 /* Terms Section */

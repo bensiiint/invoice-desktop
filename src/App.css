@@ -296,21 +296,23 @@ body {
 .tasks-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
+  min-width: 1180px; /* Increased for new Reference Number column */
   table-layout: fixed;
 }
 
 /* Column widths */
-.tasks-table th:nth-child(1) { width: 220px; }
-.tasks-table th:nth-child(2) { width: 70px; }
-.tasks-table th:nth-child(3) { width: 70px; }
-.tasks-table th:nth-child(4) { width: 100px; }
-.tasks-table th:nth-child(5) { width: 80px; }
-.tasks-table th:nth-child(6) { width: 100px; }
-.tasks-table th:nth-child(7) { width: 120px; }
-.tasks-table th:nth-child(8) { width: 90px; }
-.tasks-table th:nth-child(9) { width: 110px; }
-.tasks-table th:nth-child(10) { width: 70px; }
+.tasks-table th:nth-child(1) { width: 180px; } /* Description - reduced */
+.tasks-table th:nth-child(2) { width: 80px; }  /* Ref No - new */
+.tasks-table th:nth-child(3) { width: 70px; }  /* Days */
+.tasks-table th:nth-child(4) { width: 70px; }  /* Hr */
+.tasks-table th:nth-child(5) { width: 90px; }  /* Time Charge - reduced */
+.tasks-table th:nth-child(6) { width: 70px; }  /* OT Hrs - reduced */
+.tasks-table th:nth-child(7) { width: 90px; }  /* Overtime - reduced */
+.tasks-table th:nth-child(8) { width: 110px; } /* Software - reduced */
+.tasks-table th:nth-child(9) { width: 80px; }  /* OH - reduced */
+.tasks-table th:nth-child(10) { width: 70px; }  /* Type */
+.tasks-table th:nth-child(11) { width: 100px; } /* Total - reduced */
+.tasks-table th:nth-child(12) { width: 70px; }  /* Action */
 
 .tasks-table th {
   background: #f9fafb;
@@ -377,6 +379,13 @@ body {
   min-width: 180px;
 }
 
+.reference-input {
+  text-align: center;
+  width: 100%;
+  max-width: 75px;
+  font-size: 11px;
+}
+
 .number-input {
   text-align: center;
   width: 100%;
@@ -385,6 +394,11 @@ body {
 
 .description-cell {
   text-align: left !important;
+  vertical-align: middle;
+}
+
+.reference-cell {
+  text-align: center !important;
   vertical-align: middle;
 }
 
@@ -422,6 +436,86 @@ body {
 .remove-icon {
   width: 14px;
   height: 14px;
+}
+
+/* Type cell and dropdown styling */
+.type-cell {
+  text-align: center !important;
+}
+
+.type-select {
+  width: 100%;
+  max-width: 60px;
+  padding: 4px 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #ffffff;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.type-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.type-select:hover {
+  border-color: #d1d5db;
+}
+
+/* Custom type input styling */
+.custom-type-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+}
+
+.custom-type-input {
+  width: 70px !important;
+  max-width: 70px;
+  padding: 3px 6px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px;
+  background: #ffffff !important;
+  font-size: 10px !important;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.custom-type-input:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.reset-type-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 3px;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.reset-type-button:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.reset-type-button:active {
+  background: #d1d5db;
 }
 
 /* Value Basis Row */
@@ -598,7 +692,7 @@ body {
   }
 
   .tasks-table {
-    min-width: 800px;
+    min-width: 980px; /* Increased for Reference Number column */
   }
 }
 
@@ -632,13 +726,13 @@ body {
   }
 
   .tasks-table {
-    min-width: 700px;
+    min-width: 830px; /* Increased for Reference Number column */
   }
 }
 
 @media (max-width: 480px) {
   .tasks-table {
-    min-width: 600px;
+    min-width: 730px; /* Increased for Reference Number column */
   }
 
   .top-nav {

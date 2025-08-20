@@ -10,8 +10,8 @@ tasks,
 baseRates,
 isPreview = false
 }) => {
-  // Calculate actual task count including overhead
-  const actualTaskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0);
+  // Calculate actual task count including overhead + nothing follow row
+  const actualTaskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
   const maxRows = actualTaskCount > 10 ? Math.min(actualTaskCount, 20) : 10; // Dynamic max rows
 
   // Memoize calculations
@@ -118,7 +118,7 @@ isPreview = false
                 <td>{task.referenceNumber || ''}</td>
                 <td className="description-cell">{task.description}</td>
                 <td>{task.days > 0 ? task.days : ''}</td>
-                <td>3D</td>
+                <td>{task.type || '3D'}</td>
                 <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
               </tr>
             ))}
@@ -126,7 +126,7 @@ isPreview = false
             {/* Administrative overhead row */}
             {baseRates.overheadPercentage > 0 && (
               <tr>
-                <td>{tasks.length + 1}</td>
+                <td></td>
                 <td>Administrative overhead</td>
                 <td className="description-cell"></td>
                 <td></td>
@@ -135,8 +135,18 @@ isPreview = false
               </tr>
             )}
             
-            {/* Empty rows to fill space - dynamic based on phase */}
-            {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0)) }, (_, i) => (
+            {/* Nothing Follow row - security feature */}
+            <tr>
+              <td></td>
+              <td></td>
+              <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            
+            {/* Empty rows to fill space - dynamic based on phase (reduced by 1 for nothing follow row) */}
+            {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
               <tr key={`empty-${i}`}>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
