@@ -281,6 +281,31 @@ body {
   transform: translateY(-1px);
 }
 
+.add-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.add-button:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+}
+
+.sub-task-button {
+  background: #10b981;
+}
+
+.sub-task-button:hover:not(:disabled) {
+  background: #059669;
+}
+
+.task-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .add-icon {
   width: 16px;
   height: 16px;
@@ -301,10 +326,10 @@ body {
 }
 
 /* Column widths */
-.tasks-table th:nth-child(1) { width: 180px; } /* Description - reduced */
-.tasks-table th:nth-child(2) { width: 80px; }  /* Ref No - new */
-.tasks-table th:nth-child(3) { width: 70px; }  /* Days */
-.tasks-table th:nth-child(4) { width: 70px; }  /* Hr */
+.tasks-table th:nth-child(1) { width: 80px; }  /* Ref No - moved to first */
+.tasks-table th:nth-child(2) { width: 180px; } /* Description - moved to second */
+.tasks-table th:nth-child(3) { width: 70px; }  /* Hours */
+.tasks-table th:nth-child(4) { width: 70px; }  /* Minutes */
 .tasks-table th:nth-child(5) { width: 90px; }  /* Time Charge - reduced */
 .tasks-table th:nth-child(6) { width: 70px; }  /* OT Hrs - reduced */
 .tasks-table th:nth-child(7) { width: 90px; }  /* Overtime - reduced */
@@ -354,6 +379,61 @@ body {
 
 .tasks-table tbody tr:hover {
   background-color: #f9fafb;
+}
+
+/* Hierarchical Task Styling */
+.main-task-row {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-left: 4px solid #3b82f6;
+  font-weight: 500;
+}
+
+.main-task-row:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #cffafe 100%) !important;
+  transform: translateX(2px);
+  transition: all 0.2s ease;
+}
+
+.selected-main-task {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  border-left: 4px solid #2563eb;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.sub-task-row {
+  background: #ffffff;
+  border-left: 4px solid #e5e7eb;
+  opacity: 0.9;
+}
+
+.sub-task-row:hover {
+  background: #f9fafb !important;
+  border-left-color: #d1d5db;
+}
+
+/* Description container with hierarchy */
+.description-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sub-task-description {
+  padding-left: 12px;
+}
+
+.sub-task-indicator {
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.sub-task-input {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 /* Table Inputs */

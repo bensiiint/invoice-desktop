@@ -24,15 +24,18 @@ function App() {
     baseRates,
     currentFilePath,
     hasUnsavedChanges,
+    selectedMainTaskId,
     
     // Actions
     updateCompanyInfo,
     updateClientInfo,
     updateQuotationDetails,
     addTask,
+    addSubTask,
     removeTask,
     updateTask,
     updateBaseRate,
+    setSelectedMainTaskId,
     resetToNew,
     loadData,
     getSaveData,
@@ -97,9 +100,12 @@ function App() {
             <TasksTable
               tasks={tasks}
               baseRates={baseRates}
+              selectedMainTaskId={selectedMainTaskId}
               onTaskUpdate={updateTask}
               onTaskAdd={addTask}
+              onSubTaskAdd={addSubTask}
               onTaskRemove={removeTask}
+              onMainTaskSelect={setSelectedMainTaskId}
               onBaseRateUpdate={updateBaseRate}
             />
           </div>

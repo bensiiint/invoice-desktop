@@ -51,7 +51,7 @@ export function useInvoiceState() {
     };
   });
 
-  // Tasks State
+  // Tasks State - Updated for hierarchical structure
   const [tasks, setTasks] = useState([
     {
       id: 1,
@@ -63,6 +63,21 @@ export function useInvoiceState() {
       softwareUnits: 43,
       type: "3D",
       unitType: "JD",
+      isMainTask: true,
+      parentId: null,
+    },
+    {
+      id: 11,
+      description: "Sub-task: Data analysis",
+      referenceNumber: "",
+      hours: 2,
+      minutes: 30,
+      overtimeHours: 1,
+      softwareUnits: 10,
+      type: "3D",
+      unitType: "JD",
+      isMainTask: false,
+      parentId: 1,
     },
     {
       id: 2,
@@ -74,6 +89,8 @@ export function useInvoiceState() {
       softwareUnits: 0,
       type: "3D",
       unitType: "LS",
+      isMainTask: true,
+      parentId: null,
     },
   ]);
 
@@ -89,6 +106,9 @@ export function useInvoiceState() {
   // File state
   const [currentFilePath, setCurrentFilePath] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Selected main task for adding sub-tasks
+  const [selectedMainTaskId, setSelectedMainTaskId] = useState(null);
 
   // Debounced quotation number update
   const debouncedQuotationUpdate = useMemo(
@@ -135,13 +155,67 @@ export function useInvoiceState() {
       softwareUnits: 0,
       type: "3D",
       unitType: "JD",
+      isMainTask: true,
+      parentId: null,
     };
     setTasks(prev => [...prev, newTask]);
     setHasUnsavedChanges(true);
   }, []);
 
+  const addSubTask = useCallback((mainTaskId) => {
+    if (!mainTaskId) {
+      alert('Please select a main task first to add a sub-task.');
+      return;
+    }
+    
+    const newSubTask = {
+      id: Date.now(),
+      description: "",
+      referenceNumber: "",
+      hours: 0,
+      minutes: 0,
+      overtimeHours: 0,
+      softwareUnits: 0,
+      type: "3D",
+      unitType: "JD",
+      isMainTask: false,
+      parentId: mainTaskId,
+    };
+    
+    // Find the position to insert the sub-task (right after its parent or other sub-tasks)
+    const parentIndex = tasks.findIndex(task => task.id === mainTaskId);
+    if (parentIndex === -1) return;
+    
+    // Find the last sub-task of this parent, or insert right after parent
+    let insertIndex = parentIndex + 1;
+    for (let i = parentIndex + 1; i < tasks.length; i++) {
+      if (tasks[i].parentId === mainTaskId) {
+        insertIndex = i + 1;
+      } else {
+        break;
+      }
+    }
+    
+    setTasks(prev => {
+      const newTasks = [...prev];
+      newTasks.splice(insertIndex, 0, newSubTask);
+      return newTasks;
+    });
+    setHasUnsavedChanges(true);
+  }, [tasks]);
+
   const removeTask = useCallback((id) => {
-    setTasks(prev => prev.filter(task => task.id !== id));
+    setTasks(prev => {
+      const taskToRemove = prev.find(task => task.id === id);
+      
+      // If removing a main task, also remove all its sub-tasks
+      if (taskToRemove?.isMainTask) {
+        return prev.filter(task => task.id !== id && task.parentId !== id);
+      }
+      
+      // If removing a sub-task, just remove the sub-task
+      return prev.filter(task => task.id !== id);
+    });
     setHasUnsavedChanges(true);
   }, []);
 
@@ -212,8 +286,12 @@ export function useInvoiceState() {
         softwareUnits: 0,
         type: "3D",
         unitType: "JD",
+        isMainTask: true,
+        parentId: null,
       },
     ]);
+
+    setSelectedMainTaskId(null);
 
     setBaseRates({
       timeChargeRate: 0,
@@ -261,8 +339,12 @@ export function useInvoiceState() {
         softwareUnits: 0,
         type: "3D",
         unitType: "JD",
+        isMainTask: true,
+        parentId: null,
       },
     ]);
+
+    setSelectedMainTaskId(null);
 
     setBaseRates(data.baseRates || {
       timeChargeRate: 0,
@@ -297,15 +379,18 @@ export function useInvoiceState() {
     baseRates,
     currentFilePath,
     hasUnsavedChanges,
+    selectedMainTaskId,
     
     // Actions
     updateCompanyInfo,
     updateClientInfo,
     updateQuotationDetails,
     addTask,
+    addSubTask,
     removeTask,
     updateTask,
     updateBaseRate,
+    setSelectedMainTaskId,
     resetToNew,
     loadData,
     getSaveData,

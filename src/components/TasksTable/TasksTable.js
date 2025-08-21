@@ -9,10 +9,10 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
 
   return (
     <tr className="value-basis-row">
+      <td className="basis-value-cell">-</td>
       <td className="description-cell">
         <strong>Value Basis</strong>
       </td>
-      <td className="basis-value-cell">-</td>
       <td className="basis-value-cell">-</td>
       <td className="basis-value-cell">-</td>
       <td className="basis-rate-cell">
@@ -75,7 +75,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
   );
 });
 
-const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) => {
+const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect }) => {
   const handleUpdate = useCallback((field, value) => {
     onUpdate(task.id, field, value);
   }, [task.id, onUpdate]);
@@ -83,18 +83,22 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
   const handleRemove = useCallback(() => {
     onRemove(task.id);
   }, [task.id, onRemove]);
+  
+  const handleMainTaskClick = useCallback(() => {
+    if (task.isMainTask && onMainTaskSelect) {
+      onMainTaskSelect(task.id);
+    }
+  }, [task.isMainTask, task.id, onMainTaskSelect]);
 
   return (
-    <tr>
-      <td className="description-cell">
-        <input
-          type="text"
-          value={task.description}
-          onChange={(e) => handleUpdate('description', e.target.value)}
-          className="table-input description-input"
-          placeholder="Task description"
-        />
-      </td>
+    <tr 
+      className={`
+        ${task.isMainTask ? 'main-task-row' : 'sub-task-row'}
+        ${isSelected ? 'selected-main-task' : ''}
+      `}
+      onClick={handleMainTaskClick}
+      style={{ cursor: task.isMainTask ? 'pointer' : 'default' }}
+    >
       <td className="reference-cell">
         <input
           type="text"
@@ -103,6 +107,18 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
           className="table-input reference-input"
           placeholder="Ref No"
         />
+      </td>
+      <td className="description-cell">
+        <div className={`description-container ${!task.isMainTask ? 'sub-task-description' : ''}`}>
+          {!task.isMainTask && <span className="sub-task-indicator">↳</span>}
+          <input
+            type="text"
+            value={task.description}
+            onChange={(e) => handleUpdate('description', e.target.value)}
+            className={`table-input description-input ${!task.isMainTask ? 'sub-task-input' : ''}`}
+            placeholder={task.isMainTask ? "Main task description" : "Part's name"}
+          />
+        </div>
       </td>
       <td>
         <input
@@ -216,9 +232,12 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
 const TasksTable = memo(({
   tasks,
   baseRates,
+  selectedMainTaskId,
   onTaskUpdate,
   onTaskAdd,
+  onSubTaskAdd,
   onTaskRemove,
+  onMainTaskSelect,
   onBaseRateUpdate,
 }) => {
   // Memoize calculations to prevent recalculation on every render
@@ -229,19 +248,42 @@ const TasksTable = memo(({
       const basicLabor = totalHours * baseRates.timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
-      const subtotal = basicLabor + overtime + software;
+      
+      let aggregatedBasicLabor = basicLabor;
+      let aggregatedOvertime = overtime;
+      let aggregatedSoftware = software;
+      
+      // If this is a main task, aggregate sub-task totals
+      if (task.isMainTask) {
+        const subTasks = tasks.filter(t => t.parentId === task.id);
+        subTasks.forEach(subTask => {
+          const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
+          aggregatedBasicLabor += subTotalHours * baseRates.timeChargeRate;
+          aggregatedOvertime += subTask.overtimeHours * baseRates.overtimeRate;
+          aggregatedSoftware += (subTask.softwareUnits || 0) * baseRates.softwareRate;
+        });
+      }
+      
+      const subtotal = aggregatedBasicLabor + aggregatedOvertime + aggregatedSoftware;
       const overhead = subtotal * (baseRates.overheadPercentage / 100);
+      
       return {
         taskId: task.id,
-        basicLabor,
-        overtime,
-        software,
-        overhead,
-        total: basicLabor + overtime + software + overhead,
+        basicLabor: task.isMainTask ? aggregatedBasicLabor : basicLabor,
+        overtime: task.isMainTask ? aggregatedOvertime : overtime,
+        software: task.isMainTask ? aggregatedSoftware : software,
+        overhead: task.isMainTask ? overhead : (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100),
+        total: task.isMainTask ? 
+          (aggregatedBasicLabor + aggregatedOvertime + aggregatedSoftware + overhead) :
+          (basicLabor + overtime + software + (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100)),
       };
     });
 
-    const grand = totals.reduce((sum, task) => sum + task.total, 0);
+    // Only count main tasks for grand total (sub-tasks are already included in main task totals)
+    const grand = totals
+      .filter((_, index) => tasks[index].isMainTask)
+      .reduce((sum, task) => sum + task.total, 0);
+    
     return { taskTotals: totals, grandTotal: grand };
   }, [tasks, baseRates]);
 
@@ -270,11 +312,22 @@ const TasksTable = memo(({
     <div className="section-card tasks-card">
       <div className="card-header">
         <DollarSign className="card-icon tasks" />
-        <h2>Engineering Tasks</h2>
-        <button className="add-button" onClick={onTaskAdd}>
-          <Plus className="add-icon" />
-          Add Task
-        </button>
+        <h2>Computation Table</h2>
+        <div className="task-buttons">
+          <button className="add-button" onClick={onTaskAdd}>
+            <Plus className="add-icon" />
+            Add Assembly
+          </button>
+          <button 
+            className="add-button sub-task-button" 
+            onClick={() => onSubTaskAdd(selectedMainTaskId)}
+            disabled={!selectedMainTaskId}
+            title={!selectedMainTaskId ? "Select a main task first" : "Add sub-task"}
+          >
+            <Plus className="add-icon" />
+            Add Parts
+          </button>
+        </div>
       </div>
 
       <div className="card-content">
@@ -282,8 +335,8 @@ const TasksTable = memo(({
           <table className="tasks-table">
             <thead>
               <tr>
-                <th>Description</th>
                 <th>Ref No</th>
+                <th>Description</th>
                 <th>Hours</th>
                 <th>Minutes</th>
                 <th>Time Charge</th>
@@ -307,6 +360,8 @@ const TasksTable = memo(({
                   onUpdate={onTaskUpdate}
                   onRemove={onTaskRemove}
                   formatCurrency={formatCurrency}
+                  isSelected={task.isMainTask && task.id === selectedMainTaskId}
+                  onMainTaskSelect={onMainTaskSelect}
                 />
               ))}
             </tbody>

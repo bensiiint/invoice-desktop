@@ -10,18 +10,33 @@ tasks,
 baseRates,
 isPreview = false
 }) => {
-  // Calculate actual task count including overhead + nothing follow row
-  const actualTaskCount = tasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
+  // Calculate actual task count including overhead + nothing follow row (only main tasks)
+  const mainTasks = tasks.filter(task => task.isMainTask);
+  const actualTaskCount = mainTasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
   const maxRows = actualTaskCount > 10 ? Math.min(actualTaskCount, 20) : 10; // Dynamic max rows
 
   // Memoize calculations
   const { taskTotals, grandTotal, overheadTotal } = useMemo(() => {
-    const totals = tasks.map((task) => {
-      // Calculate total hours from hours and minutes
-      const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      const basicLabor = totalHours * baseRates.timeChargeRate;
-      const overtime = task.overtimeHours * baseRates.overtimeRate;
-      const software = (task.softwareUnits || 0) * baseRates.softwareRate;
+    const totals = mainTasks.map((task) => {
+      // Calculate main task hours and minutes
+      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+      
+      // Aggregate sub-task totals
+      const subTasks = tasks.filter(t => t.parentId === task.id);
+      let aggregatedHours = mainTotalHours;
+      let aggregatedOvertime = task.overtimeHours;
+      let aggregatedSoftware = (task.softwareUnits || 0);
+      
+      subTasks.forEach(subTask => {
+        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
+        aggregatedHours += subTotalHours;
+        aggregatedOvertime += subTask.overtimeHours;
+        aggregatedSoftware += (subTask.softwareUnits || 0);
+      });
+      
+      const basicLabor = aggregatedHours * baseRates.timeChargeRate;
+      const overtime = aggregatedOvertime * baseRates.overtimeRate;
+      const software = aggregatedSoftware * baseRates.softwareRate;
       return basicLabor + overtime + software; // Task subtotal without overhead
     });
 
@@ -34,7 +49,7 @@ isPreview = false
       grandTotal: grand,
       overheadTotal: overhead
     };
-  }, [tasks, baseRates]);
+  }, [mainTasks, tasks, baseRates]);
 
   const formatCurrency = (amount) => {
     return `¥${amount.toLocaleString()}`;
@@ -47,6 +62,26 @@ isPreview = false
       return `${hours}h ${minutes}m`;
     }
     return `${hours}h`;
+  };
+  
+  const getAggregatedHours = (mainTask) => {
+    // Get sub-tasks for this main task
+    const subTasks = tasks.filter(t => t.parentId === mainTask.id);
+    
+    // Sum up main task + sub-task hours and minutes
+    let totalHours = mainTask.hours || 0;
+    let totalMinutes = mainTask.minutes || 0;
+    
+    subTasks.forEach(subTask => {
+      totalHours += subTask.hours || 0;
+      totalMinutes += subTask.minutes || 0;
+    });
+    
+    // Convert excess minutes to hours
+    totalHours += Math.floor(totalMinutes / 60);
+    totalMinutes = totalMinutes % 60;
+    
+    return { hours: totalHours, minutes: totalMinutes };
   };
 
   return (
@@ -123,16 +158,19 @@ isPreview = false
           </thead>
           <tbody>
             {/* Task rows */}
-            {tasks.map((task, index) => (
-              <tr key={task.id}>
-                <td>{index + 1}</td>
-                <td>{task.referenceNumber || ''}</td>
-                <td className="description-cell">{task.description}</td>
-                <td>{formatHours(task.hours || 0, task.minutes || 0)}</td>
-                <td>{task.type || '3D'}</td>
-                <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
-              </tr>
-            ))}
+            {mainTasks.map((task, index) => {
+              const aggregatedHours = getAggregatedHours(task);
+              return (
+                <tr key={task.id}>
+                  <td>{index + 1}</td>
+                  <td>{task.referenceNumber || ''}</td>
+                  <td className="description-cell">{task.description}</td>
+                  <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
+                  <td>{task.type || '3D'}</td>
+                  <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
+                </tr>
+              );
+            })}
             
             {/* Administrative overhead row */}
             {baseRates.overheadPercentage > 0 && (
@@ -157,7 +195,7 @@ isPreview = false
             </tr>
             
             {/* Empty rows to fill space - dynamic based on phase (reduced by 1 for nothing follow row) */}
-            {Array.from({ length: Math.max(0, maxRows - tasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
+            {Array.from({ length: Math.max(0, maxRows - mainTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
               <tr key={`empty-${i}`}>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
