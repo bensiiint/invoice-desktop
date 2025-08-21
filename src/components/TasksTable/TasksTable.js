@@ -14,16 +14,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
       </td>
       <td className="basis-value-cell">-</td>
       <td className="basis-value-cell">-</td>
-      <td className="basis-value-cell">
-        <input
-          type="number"
-          value={baseRates.hoursPerDay}
-          onChange={(e) => handleUpdate('hoursPerDay', e.target.value)}
-          className="table-input number-input rate-input"
-          min="0"
-          step="0.5"
-        />
-      </td>
+      <td className="basis-value-cell">-</td>
       <td className="basis-rate-cell">
         <input
           type="number"
@@ -116,14 +107,24 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency }) =
       <td>
         <input
           type="number"
-          value={task.days}
-          onChange={(e) => handleUpdate('days', parseFloat(e.target.value) || 0)}
+          value={task.hours || 0}
+          onChange={(e) => handleUpdate('hours', parseFloat(e.target.value) || 0)}
           className="table-input number-input"
           min="0"
           step="0.5"
         />
       </td>
-      <td className="calculated-cell">{task.totalHours || 0}</td>
+      <td>
+        <input
+          type="number"
+          value={task.minutes || 0}
+          onChange={(e) => handleUpdate('minutes', parseFloat(e.target.value) || 0)}
+          className="table-input number-input"
+          min="0"
+          max="59"
+          step="1"
+        />
+      </td>
       <td className="calculated-cell time-charge-bg">
         {formatCurrency(subtotals.basicLabor)}
       </td>
@@ -223,7 +224,9 @@ const TasksTable = memo(({
   // Memoize calculations to prevent recalculation on every render
   const { taskTotals, grandTotal } = useMemo(() => {
     const totals = tasks.map((task) => {
-      const basicLabor = task.totalHours * baseRates.timeChargeRate;
+      // Calculate total hours from hours and minutes
+      const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+      const basicLabor = totalHours * baseRates.timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
       const subtotal = basicLabor + overtime + software;
@@ -281,8 +284,8 @@ const TasksTable = memo(({
               <tr>
                 <th>Description</th>
                 <th>Ref No</th>
-                <th>Days</th>
-                <th>Hr</th>
+                <th>Hours</th>
+                <th>Minutes</th>
                 <th>Time Charge</th>
                 <th>OT Hrs</th>
                 <th>Overtime</th>

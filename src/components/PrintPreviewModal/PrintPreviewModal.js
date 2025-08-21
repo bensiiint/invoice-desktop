@@ -53,7 +53,9 @@ const PrintPreviewModal = memo(({
   // Memoize calculations for print layout
   const { taskTotals, grandTotal, overheadTotal, actualTaskCount, maxRows } = useMemo(() => {
     const totals = tasks.map((task) => {
-      const basicLabor = task.totalHours * baseRates.timeChargeRate;
+      // Calculate total hours from hours and minutes
+      const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+      const basicLabor = totalHours * baseRates.timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
       return basicLabor + overtime + software; // Task subtotal without overhead
@@ -78,6 +80,15 @@ const PrintPreviewModal = memo(({
 
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;
+  }, []);
+
+  const formatHours = useCallback((hours, minutes) => {
+    const totalHours = hours + (minutes || 0) / 60;
+    if (totalHours === 0) return '';
+    if (minutes && minutes > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${hours}h`;
   }, []);
 
   // Handle print
@@ -260,7 +271,7 @@ const PrintPreviewModal = memo(({
                           <th className="col-no">NO.</th>
                           <th className="col-reference">REFERENCE NO.</th>
                           <th className="col-description">DESCRIPTION</th>
-                          <th className="col-unit">UNIT<br/>(PAGE)</th>
+                          <th className="col-unit">HOURS</th>
                           <th className="col-type">TYPE</th>
                           <th className="col-price">PRICE</th>
                         </tr>
@@ -272,7 +283,7 @@ const PrintPreviewModal = memo(({
                             <td>{index + 1}</td>
                             <td>{task.referenceNumber || ''}</td>
                             <td className="description-cell">{task.description}</td>
-                            <td>{task.days > 0 ? task.days : ''}</td>
+                            <td>{formatHours(task.hours || 0, task.minutes || 0)}</td>
                             <td>{task.type || '3D'}</td>
                             <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
                           </tr>

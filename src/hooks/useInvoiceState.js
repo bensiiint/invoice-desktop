@@ -57,8 +57,8 @@ export function useInvoiceState() {
       id: 1,
       description: "受入れデータ機械配管図面仕様の検討・修正",
       referenceNumber: "",
-      days: 5,
-      totalHours: 40,
+      hours: 5,
+      minutes: 0,
       overtimeHours: 3,
       softwareUnits: 43,
       type: "3D",
@@ -68,8 +68,8 @@ export function useInvoiceState() {
       id: 2,
       description: "Administrative Overhead",
       referenceNumber: "",
-      days: 0,
-      totalHours: 0,
+      hours: 0,
+      minutes: 0,
       overtimeHours: 0,
       softwareUnits: 0,
       type: "3D",
@@ -79,7 +79,6 @@ export function useInvoiceState() {
 
   // Base Rates State
   const [baseRates, setBaseRates] = useState({
-    hoursPerDay: 8,
     timeChargeRate: 2700,
     otHoursMultiplier: 1.3,
     overtimeRate: 3300,
@@ -130,8 +129,8 @@ export function useInvoiceState() {
       id: Date.now(),
       description: "",
       referenceNumber: "",
-      days: 0,
-      totalHours: 0,
+      hours: 0,
+      minutes: 0,
       overtimeHours: 0,
       softwareUnits: 0,
       type: "3D",
@@ -153,16 +152,11 @@ export function useInvoiceState() {
         
         const updatedTask = { ...task, [field]: value };
         
-        // Auto-calculate totalHours when days change
-        if (field === "days") {
-          updatedTask.totalHours = value * baseRates.hoursPerDay;
-        }
-        
         return updatedTask;
       })
     );
     setHasUnsavedChanges(true);
-  }, [baseRates.hoursPerDay]);
+  }, []);
 
   const updateBaseRate = useCallback((field, value) => {
     setBaseRates(prev => {
@@ -177,16 +171,6 @@ export function useInvoiceState() {
 
       return newRates;
     });
-
-    // Update totalHours for all tasks when hoursPerDay changes
-    if (field === "hoursPerDay") {
-      setTasks(prev =>
-        prev.map(task => ({
-          ...task,
-          totalHours: task.days * value,
-        }))
-      );
-    }
 
     setHasUnsavedChanges(true);
   }, []);
@@ -222,8 +206,8 @@ export function useInvoiceState() {
         id: Date.now(),
         description: "",
         referenceNumber: "",
-        days: 0,
-        totalHours: 0,
+        hours: 0,
+        minutes: 0,
         overtimeHours: 0,
         softwareUnits: 0,
         type: "3D",
@@ -232,7 +216,6 @@ export function useInvoiceState() {
     ]);
 
     setBaseRates({
-      hoursPerDay: 8,
       timeChargeRate: 0,
       otHoursMultiplier: 1.3,
       overtimeRate: 0,
@@ -272,8 +255,8 @@ export function useInvoiceState() {
         id: Date.now(),
         description: "",
         referenceNumber: "",
-        days: 0,
-        totalHours: 0,
+        hours: 0,
+        minutes: 0,
         overtimeHours: 0,
         softwareUnits: 0,
         type: "3D",
@@ -282,7 +265,6 @@ export function useInvoiceState() {
     ]);
 
     setBaseRates(data.baseRates || {
-      hoursPerDay: 8,
       timeChargeRate: 0,
       otHoursMultiplier: 1.3,
       overtimeRate: 0,
