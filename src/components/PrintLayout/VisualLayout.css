@@ -292,15 +292,16 @@
   padding: 3.5px;
 }
 
-/* Header Section */
+/* Header Section - Original Quotation Layout */
 .header-visual {
-  display: block; /* Switch back to block for absolute positioning */
+  display: block;
   position: relative;
   margin-bottom: 25px;
   margin-top: 0;
   min-height: 150px;
 }
 
+/* Original logo positioning for quotation */
 .logo-visual {
   position: absolute;
   left: 0;
@@ -315,13 +316,14 @@
   object-fit: contain;
 }
 
+/* Original center text for quotation */
 .center-text-visual {
   position: absolute;
-  left: 40%; /* Position at 50% of container width */
+  left: 40%;
   top: 60%;
-  transform: translate(-50%, -50%); /* Center exactly */
+  transform: translate(-50%, -50%);
   text-align: center;
-  white-space: nowrap; /* Prevent wrapping */
+  white-space: nowrap;
   z-index: 2;
 }
 
@@ -330,7 +332,7 @@
   font-weight: bold;
   margin-bottom: 10px;
   line-height: 1.1;
-  white-space: pre-line; /* Allow BR tags but prevent other wrapping */
+  white-space: pre-line; /* Allow BR tags for quotation */
 }
 
 .quotation-title-visual {
@@ -340,6 +342,7 @@
   white-space: nowrap;
 }
 
+/* Original right details for quotation */
 .right-details-visual {
   position: absolute;
   right: 0;
@@ -348,32 +351,100 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  min-height: 150px; /* ✅ FIXED: Consistent height for layout stability */
+  min-height: 150px;
+}
+
+/* Billing Statement - Simple Clean Header Layout */
+.header-visual.billing-header {
+  min-height: 120px;
+  margin-bottom: 20px;
+  padding-bottom: 0;
+  border-bottom: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.billing-header .logo-visual {
+  position: absolute;
+  left: 50px;        /* 50px from left edge */
+  top: 10px;         /* 10px from top */
+  width: 100px;      /* Logo width */
+  height: 100px;     /* Logo height */
+}
+
+.billing-header .center-text-visual {
+  position: static;
+  text-align: center;
+  transform: none;
+  margin-top: 10px;          /* 10px from top */
+  margin-left: 25px;         /* 25px left adjustment for logo space */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.billing-header .company-name-visual {
+  font-size: 20px;           /* Company name font size */
+  font-weight: bold;
+  margin-bottom: 8px;        /* 8px space below company name */
+  line-height: 1.2;
+  color: #000;
+  white-space: nowrap;       /* Single line */
+}
+
+.billing-header .company-address-visual {
+  font-size: 13px;           /* Address font size - larger */
+  line-height: 1.4;
+  color: #000;
+  margin-bottom: 15px;       /* 15px space below address */
+  text-align: center;
+  font-weight: normal;       /* Not bold */
+  max-width: 400px;          /* Maximum width for address block */
+}
+
+.billing-header .quotation-title-visual {
+  font-size: 18px;           /* "BILLING STATEMENT" font size */
+  font-weight: normal;       /* Not bold */
+  margin-top: 0;
+  color: #000;
+}
+
+/* Hide quotation details completely in billing mode */
+.billing-header .quotation-details-visual {
+  display: none;
+}
+
+/* Hide right details completely in billing mode */
+.billing-header .right-details-visual {
+  display: none;
 }
 
 .company-info-visual {
-  font-size: 12px; /* Base font size for address */
+  font-size: 12px;
   text-align: right;
-  margin-bottom: 25px; /* Increased spacing to separate from quotation details */
-  line-height: 1.4; /* Tighter line spacing */
+  margin-bottom: 25px;
+  line-height: 1.4;
   position: relative;
-  min-height: auto; /* Remove fixed height to allow natural flow */
+  min-height: auto;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
 
 .company-name-info {
-  font-size: 12px; /* Larger font for company name in address */
-  font-weight: bold; /* Bold company name */
-  margin-bottom: 0px; /* Reduced spacing */
-  min-height: auto; /* Remove fixed height */
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 0px;
+  min-height: auto;
 }
 
 .quotation-details-visual {
   font-size: 12px;
   position: absolute;
-  top: 190px; /* Moved up from 200px to be closer to company info */
+  top: 190px;
   right: 0;
   width: 280px;
 }
@@ -381,25 +452,27 @@
 .detail-row-visual {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px; /* More spacing between rows */
+  margin-bottom: 6px;
   align-items: center;
-  min-height: 20px; /* ✅ FIXED: Consistent row height */
+  min-height: 20px;
 }
 
 .detail-label-visual {
   font-weight: bold;
-  font-size: 12px; /* Consistent font size */
+  font-size: 12px;
 }
 
 .detail-value-visual {
-  border-bottom: 1px solid black; /* Thinner border */
-  min-width: 150px; /* Increased width */
+  border-bottom: 1px solid black;
+  min-width: 150px;
   padding-bottom: 3px;
   text-align: center;
   font-size: 11px;
-  min-height: 16px; /* ✅ FIXED: Consistent height whether filled or empty */
+  min-height: 16px;
   display: inline-block;
 }
+
+
 
 /* Contact Section */
 .contact-section-visual {
@@ -407,6 +480,8 @@
   margin-top: 0px;
   min-height: 90px; /* ✅ FIXED: Reserve consistent space for client info */
 }
+
+
 
 .quotation-to-visual {
   font-size: 16px; /* Increased font size */
@@ -545,6 +620,62 @@
   font-style: italic;
   color: #666;
   margin-top: 50px;
+}
+
+/* Billing Statement specific footer styles */
+.footer-visual .bank-details-section {
+  margin-bottom: 15px;
+  font-size: 11px;
+  color: #000;
+  font-style: normal;
+}
+
+.footer-visual .bank-details-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-decoration: underline;
+  font-style: normal;
+}
+
+.footer-visual .bank-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin-left: 20px;
+}
+
+.footer-visual .bank-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-visual .bank-label {
+  font-weight: bold;
+  min-width: 180px;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.footer-visual .bank-value {
+  font-weight: normal;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.footer-visual .footer-bottom {
+  margin-top: 10px;
+  font-size: 10px;
+  font-style: italic;
+  text-align: right;
+  color: #000;
+}
+
+/* Override the flex layout for billing statement footer */
+.footer-visual:has(.bank-details-section) {
+  display: block;
+  text-align: left;
 }
 
 /* Responsive scaling for preview - REMOVED TO MATCH PRINT LAYOUT SIZE */

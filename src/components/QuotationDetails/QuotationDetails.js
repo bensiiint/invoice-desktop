@@ -41,6 +41,26 @@ const QuotationDetails = memo(({ quotationDetails, onUpdate }) => {
               className="form-input"
             />
           </div>
+          <div className="input-group">
+            <label>Invoice Number <span className="optional-label">(For Billing Statement)</span></label>
+            <input
+              type="text"
+              value={quotationDetails.invoiceNo || ''}
+              onChange={(e) => handleChange('invoiceNo', e.target.value)}
+              className="form-input"
+              placeholder="Used in billing statement mode"
+            />
+          </div>
+          <div className="input-group">
+            <label>Job Order Number <span className="optional-label">(For Billing Statement)</span></label>
+            <input
+              type="text"
+              value={quotationDetails.jobOrderNo || ''}
+              onChange={(e) => handleChange('jobOrderNo', e.target.value)}
+              className="form-input"
+              placeholder="Used in billing statement mode"
+            />
+          </div>
         </div>
       </div>
     </div>

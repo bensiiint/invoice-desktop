@@ -81,6 +81,52 @@
   align-items: center;
 }
 
+/* Print Mode Toggle Buttons */
+.print-mode-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+  margin-right: 8px;
+}
+
+.mode-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: transparent;
+  color: #6b7280;
+}
+
+.mode-button.active {
+  background: #3b82f6;
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.mode-button:hover:not(.active) {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.action-separator {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+  margin: 0 8px;
+}
+
 .modal-header-actions .action-button {
   display: flex;
   align-items: center;
@@ -1291,3 +1337,274 @@
   width: 250px !important; /* Match longer line width */
   font-style: italic;
 }
+
+/* Bank Details Section for Billing Statement */
+.bank-details-section {
+  margin-bottom: 15px;
+  font-size: 11px;
+  color: #000;
+}
+
+.bank-details-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.bank-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  margin-left: 20px;
+}
+
+.bank-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bank-label {
+  font-weight: bold;
+  min-width: 180px;
+  font-size: 11px;
+}
+
+.bank-value {
+  font-weight: normal;
+  font-size: 11px;
+}
+
+.footer-bottom {
+  margin-top: 10px;
+  font-size: 10px;
+  font-style: italic;
+  text-align: right;
+  color: #000;
+}
+
+/* Original Quotation Header Styles for Preview */
+.preview-content .header-visual {
+  display: block !important;
+  position: relative !important;
+  margin-bottom: 25px !important;
+  margin-top: 0 !important;
+  min-height: 150px !important;
+}
+
+.preview-content .logo-visual {
+  position: absolute !important;
+  left: 0 !important;
+  top: 5px !important;
+  width: 125px !important;
+  height: 140px !important;
+}
+
+.preview-content .logo-visual img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.preview-content .center-text-visual {
+  position: absolute !important;
+  left: 40% !important;
+  top: 60% !important;
+  transform: translate(-50%, -50%) !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  z-index: 2 !important;
+  width: auto !important;
+  display: block !important;
+  flex-direction: unset !important;
+  align-items: unset !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+}
+
+.preview-content .company-name-visual {
+  font-size: 28px !important;
+  font-weight: bold !important;
+  margin-bottom: 10px !important;
+  line-height: 1.1 !important;
+  white-space: pre-line !important; /* Allow BR tags for quotation */
+  color: #000 !important;
+}
+
+.preview-content .quotation-title-visual {
+  font-size: 26px !important;
+  font-weight: bold !important;
+  margin-top: 45px !important;
+  white-space: nowrap !important;
+  color: #000 !important;
+}
+
+.preview-content .right-details-visual {
+  position: absolute !important;
+  right: 0 !important;
+  top: 19px !important;
+  width: 280px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  min-height: 150px !important;
+}
+
+.preview-content .company-info-visual {
+  font-size: 12px !important;
+  text-align: right !important;
+  margin-bottom: 25px !important;
+  line-height: 1.4 !important;
+  position: relative !important;
+  min-height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+
+.preview-content .company-name-info {
+  font-size: 12px !important;
+  font-weight: bold !important;
+  margin-bottom: 0px !important;
+  min-height: auto !important;
+}
+
+.preview-content .quotation-details-visual {
+  font-size: 12px !important;
+  position: absolute !important;
+  top: 190px !important;
+  right: 0 !important;
+  width: 280px !important;
+}
+
+.preview-content .detail-row-visual {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+  align-items: center !important;
+  min-height: 20px !important;
+}
+
+.preview-content .detail-label-visual {
+  font-weight: bold !important;
+  font-size: 12px !important;
+}
+
+.preview-content .detail-value-visual {
+  border-bottom: 1px solid black !important;
+  min-width: 150px !important;
+  padding-bottom: 3px !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  min-height: 16px !important;
+  display: inline-block !important;
+}
+
+/* Billing Header Styles for Preview - Override the above */
+.preview-content .header-visual.billing-header {
+  min-height: 120px !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+.preview-content .billing-header .logo-visual {
+  position: absolute !important;
+  left: 50px !important;        /* 50px from left edge */
+  top: 10px !important;         /* 10px from top */
+  width: 100px !important;      /* Logo width */
+  height: 100px !important;     /* Logo height */
+}
+
+.preview-content .billing-header .center-text-visual {
+  position: static !important;
+  text-align: center !important;
+  transform: none !important;
+  margin-top: 10px !important;          /* 10px from top */
+  margin-left: 25px !important;         /* 25px left adjustment for logo space */
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.preview-content .billing-header .company-name-visual {
+  font-size: 20px !important;           /* Company name font size */
+  font-weight: bold !important;
+  margin-bottom: 8px !important;        /* 8px space below company name */
+  line-height: 1.2 !important;
+  color: #000 !important;
+  white-space: nowrap !important;       /* Single line */
+}
+
+.preview-content .billing-header .company-address-visual {
+  font-size: 13px !important;           /* Address font size - larger */
+  line-height: 1.4 !important;
+  color: #000 !important;
+  margin-bottom: 15px !important;       /* 15px space below address */
+  text-align: center !important;
+  font-weight: normal !important;       /* Not bold */
+  max-width: 400px !important;          /* Maximum width for address block */
+}
+
+.preview-content .billing-header .quotation-title-visual {
+  font-size: 18px !important;           /* "BILLING STATEMENT" font size */
+  font-weight: normal !important;       /* Not bold */
+  margin-top: 0 !important;
+  color: #000 !important;
+}
+
+.preview-content .billing-header .right-details-visual {
+  display: none !important;
+}
+
+.preview-content .billing-header .company-info-visual {
+  display: none !important;
+}
+
+.preview-content .billing-header .quotation-details-visual {
+  display: none !important;
+}
+
+/* Billing Details Section Styles for Preview */
+.preview-content .billing-details-section {
+  margin: 15px 0 !important;
+  padding: 10px 0 !important;
+  border-top: 1px solid #ccc !important;
+  border-bottom: 1px solid #ccc !important;
+}
+
+.preview-content .billing-detail-row {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  margin-bottom: 4px !important;
+  font-size: 12px !important;
+}
+
+.preview-content .billing-detail-row:last-child {
+  margin-bottom: 0 !important;
+}
+
+.preview-content .billing-detail-label {
+  font-weight: bold !important;
+  margin-right: 20px !important;
+  min-width: 100px !important;
+  text-align: right !important;
+  color: #000 !important;
+}
+
+.preview-content .billing-detail-value {
+  border-bottom: 1px solid #000 !important;
+  min-width: 150px !important;
+  padding: 2px 0 !important;
+  text-align: center !important;
+  color: #000 !important;
+  font-weight: normal !important;
+}
+

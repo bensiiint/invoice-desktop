@@ -48,6 +48,8 @@ export function useInvoiceState() {
       quotationNo,
       referenceNo: "24-003-016",
       date: today,
+      invoiceNo: "", // For billing statement
+      jobOrderNo: "", // For billing statement
     };
   });
 
@@ -273,6 +275,8 @@ export function useInvoiceState() {
       quotationNo: newQuotationNo,
       referenceNo: "",
       date: today,
+      invoiceNo: "", // For billing statement
+      jobOrderNo: "", // For billing statement
     });
 
     setTasks([
@@ -326,6 +330,8 @@ export function useInvoiceState() {
       quotationNo: "",
       referenceNo: "",
       date: new Date().toISOString().split("T")[0],
+      invoiceNo: "", // For billing statement
+      jobOrderNo: "", // For billing statement
     });
 
     setTasks(data.tasks || [

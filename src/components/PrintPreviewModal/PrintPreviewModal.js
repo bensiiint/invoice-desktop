@@ -19,6 +19,7 @@ const PrintPreviewModal = memo(({
   baseRates 
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [printMode, setPrintMode] = useState('quotation'); // 'quotation' or 'billing'
   const previewRef = useRef(null);
 
   // Fixed settings for A4 paper
@@ -164,6 +165,11 @@ const PrintPreviewModal = memo(({
     setIsProcessing(true);
     try {
       if (window.electronAPI) {
+        const documentType = printMode === 'billing' ? 'BillingStatement' : 'Quotation';
+        const documentNo = printMode === 'billing' 
+          ? (quotationDetails.invoiceNo || quotationDetails.quotationNo || 'Draft')
+          : (quotationDetails.quotationNo || 'Draft');
+        
         await window.electronAPI.printToPDF({
           margins: {
             marginType: 'custom',
@@ -176,7 +182,7 @@ const PrintPreviewModal = memo(({
           landscape: false,
           printBackground: true,
           color: true,
-          filename: `KMTI_Quotation_${quotationDetails.quotationNo || 'Draft'}.pdf`
+          filename: `KMTI_${documentType}_${documentNo}.pdf`
         });
         alert('PDF saved successfully!');
       } else {
@@ -191,7 +197,7 @@ const PrintPreviewModal = memo(({
     } finally {
       setIsProcessing(false);
     }
-  }, [quotationDetails.quotationNo]);
+  }, [quotationDetails.quotationNo, quotationDetails.invoiceNo, printMode]);
 
   if (!isOpen) return null;
 
@@ -203,9 +209,29 @@ const PrintPreviewModal = memo(({
         <div className="modal-header">
           <div className="modal-title">
             <Printer className="title-icon" />
-            <h2>Print Preview</h2>
+            <h2>Print Preview - {printMode === 'billing' ? 'Billing Statement' : 'Quotation'}</h2>
           </div>
           <div className="modal-header-actions">
+            {/* Print Mode Toggle Buttons */}
+            <div className="print-mode-buttons">
+              <button 
+                onClick={() => setPrintMode('quotation')}
+                className={`mode-button ${printMode === 'quotation' ? 'active' : ''}`}
+              >
+                <FileText size={14} />
+                Print Quotation
+              </button>
+              <button 
+                onClick={() => setPrintMode('billing')}
+                className={`mode-button ${printMode === 'billing' ? 'active' : ''}`}
+              >
+                <FileText size={14} />
+                Print Billing Statement
+              </button>
+            </div>
+            
+            <div className="action-separator"></div>
+            
             <button 
               onClick={handlePrint}
               disabled={isProcessing}
@@ -247,7 +273,7 @@ const PrintPreviewModal = memo(({
                   <div className={`quotation-visual-exact task-count-${actualTaskCount}`}>
                     
                     {/* Header Section */}
-                    <div className="header-visual">
+                    <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
                       {/* Logo */}
                       <div className="logo-visual">
                         <img src={Logo} alt="Company Logo" />
@@ -256,44 +282,84 @@ const PrintPreviewModal = memo(({
                       {/* Center Text */}
                       <div className="center-text-visual">
                         <div className="company-name-visual">
-                          KUSAKABE & MAENO<br/>
-                          TECH., INC
+                          {printMode === 'billing' 
+                            ? 'KUSAKABE & MAENO TECH., INC'
+                            : <>KUSAKABE & MAENO<br/>TECH., INC</>
+                          }
                         </div>
+                        
+                        {printMode === 'billing' && (
+                          <div className="company-address-visual">
+                            Unit 2-B Building B, Vital Industrial Properties Inc.<br/>
+                            First Cavite Industrial Estates, P-CIB PEZA Zone<br/>
+                            Dasmariñas City, Cavite Philippines<br/>
+                            VAT Reg. TIN: 008-883-390-000
+                          </div>
+                        )}
+                        
                         <div className="quotation-title-visual">
-                          Quotation
+                          {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
                         </div>
                       </div>
 
-                      {/* Right Details */}
-                      <div className="right-details-visual">
-                        <div className="company-info-visual">
-                          <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
-                          {companyInfo.address}<br/>
-                          {companyInfo.city}<br/>
-                          {companyInfo.location}<br/>
-                          {companyInfo.phone}
+                      {/* Right Details - Only show for quotation mode */}
+                      {printMode === 'billing' ? null : (
+                        <div className="right-details-visual">
+                          <div className="company-info-visual">
+                            <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+                            {companyInfo.address}<br/>
+                            {companyInfo.city}<br/>
+                            {companyInfo.location}<br/>
+                            {companyInfo.phone}
+                          </div>
+                          
+                          <div className="quotation-details-visual">
+                            <>
+                              <div className="detail-row-visual">
+                                <span className="detail-label-visual">Quotation No.:</span>
+                                <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+                              </div>
+                              <div className="detail-row-visual">
+                                <span className="detail-label-visual">Reference No.:</span>
+                                <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
+                              </div>
+                              <div className="detail-row-visual">
+                                <span className="detail-label-visual">Date:</span>
+                                <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+                              </div>
+                            </>
+                          </div>
                         </div>
-                        
-                        <div className="quotation-details-visual">
-                          <div className="detail-row-visual">
-                            <span className="detail-label-visual">Quotation No.:</span>
-                            <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
-                          </div>
-                          <div className="detail-row-visual">
-                            <span className="detail-label-visual">Reference No.:</span>
-                            <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
-                          </div>
-                          <div className="detail-row-visual">
-                            <span className="detail-label-visual">Date:</span>
-                            <span className="detail-value-visual">{quotationDetails.date || ''}</span>
-                          </div>
+                      )}
+                    </div>
+
+                    {/* Billing Details Section - Use exact same implementation as quotation details */}
+                    {printMode === 'billing' && (
+                      <div className="quotation-details-visual">
+                        <div className="detail-row-visual">
+                          <span className="detail-label-visual">DATE:</span>
+                          <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+                        </div>
+                        <div className="detail-row-visual">
+                          <span className="detail-label-visual">Invoice No.:</span>
+                          <span className="detail-value-visual">{quotationDetails.invoiceNo || ''}</span>
+                        </div>
+                        <div className="detail-row-visual">
+                          <span className="detail-label-visual">Quotation No.:</span>
+                          <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+                        </div>
+                        <div className="detail-row-visual">
+                          <span className="detail-label-visual">Job Order No.:</span>
+                          <span className="detail-value-visual">{quotationDetails.jobOrderNo || ''}</span>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Contact Section */}
                     <div className="contact-section-visual">
-                      <div className="quotation-to-visual">Quotation to:</div>
+                      {printMode === 'billing' ? null : (
+                        <div className="quotation-to-visual">Quotation to:</div>
+                      )}
                       <div className="client-details-visual">
                         <div className="client-company-name">{clientInfo.company}</div>
                         <div className="client-person-name">{clientInfo.contact}</div>
@@ -380,37 +446,103 @@ const PrintPreviewModal = memo(({
 
                     {/* Signatures */}
                     <div className="signatures-visual">
-                      {/* First row - Prepared by */}
-                      <div className="signature-row-visual">
-                        <div className="signature-left-visual">
-                          <div className="sig-label-visual">Prepared by:</div>
-                          <div className="sig-line-visual"></div>
-                          <div className="sig-name-visual">MR. MICHAEL PENANO</div>
-                          <div className="sig-title-visual">Engineering Manager</div>
-                        </div>
-                        <div className="signature-right-visual"></div>
-                      </div>
-
-                      {/* Second row - Approved by & Received by */}
-                      <div className="signature-row-visual">
-                        <div className="signature-left-visual">
-                          <div className="sig-label-visual">Approved by:</div>
-                          <div className="sig-line-visual"></div>
-                          <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-                          <div className="sig-title-visual">President</div>
-                        </div>
-                        <div className="signature-right-visual">
-                          <div className="sig-label-visual">Received by:</div>
-                          <div className="sig-line-visual"></div>
-                          <div className="sig-name-visual">(Signature Over Printed Name)</div>
-                        </div>
-                      </div>
+                      {printMode === 'billing' ? (
+                        <>
+                          {/* Billing Statement Signatures */}
+                          <div className="signature-row-visual">
+                            <div className="signature-left-visual">
+                              <div className="sig-label-visual">Prepared by:</div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
+                              <div className="sig-title-visual">Engineering Manager</div>
+                            </div>
+                            <div className="signature-right-visual">
+                              <div className="sig-label-visual">Approved by:</div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">MR. MICHAEL PENANO</div>
+                              <div className="sig-title-visual">Engineering Manager</div>
+                            </div>
+                          </div>
+                          <div className="signature-row-visual">
+                            <div className="signature-left-visual">
+                              <div className="sig-label-visual"></div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                              <div className="sig-title-visual">President</div>
+                            </div>
+                            <div className="signature-right-visual"></div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Quotation Signatures */}
+                          <div className="signature-row-visual">
+                            <div className="signature-left-visual">
+                              <div className="sig-label-visual">Prepared by:</div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">MR. MICHAEL PENANO</div>
+                              <div className="sig-title-visual">Engineering Manager</div>
+                            </div>
+                            <div className="signature-right-visual"></div>
+                          </div>
+                          <div className="signature-row-visual">
+                            <div className="signature-left-visual">
+                              <div className="sig-label-visual">Approved by:</div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                              <div className="sig-title-visual">President</div>
+                            </div>
+                            <div className="signature-right-visual">
+                              <div className="sig-label-visual">Received by:</div>
+                              <div className="sig-line-visual"></div>
+                              <div className="sig-name-visual">(Signature Over Printed Name)</div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Footer */}
                     <div className="footer-visual">
-                      <div>cc: admin/acctg/Engineering</div>
-                      <div>Admin Quotation Template v3.0-2025</div>
+                      {printMode === 'billing' ? (
+                        <>
+                          {/* Billing Statement Footer with Bank Details */}
+                          <div className="bank-details-section">
+                            <div className="bank-details-title">BANK DETAILS (YEN):</div>
+                            <div className="bank-details-grid">
+                              <div className="bank-detail-row">
+                                <span className="bank-label">BANK NAME:</span>
+                                <span className="bank-value">MUFG COMMERCIAL BANK CORPORATION</span>
+                              </div>
+                              <div className="bank-detail-row">
+                                <span className="bank-label">SAVINGS ACCOUNT NAME:</span>
+                                <span className="bank-value">KUSAKABE & MAENO TECH INC</span>
+                              </div>
+                              <div className="bank-detail-row">
+                                <span className="bank-label">ACCOUNT NUMBER:</span>
+                                <span className="bank-value">1234-5678-9012</span>
+                              </div>
+                              <div className="bank-detail-row">
+                                <span className="bank-label">SWIFT CODE:</span>
+                                <span className="bank-value">BOTKJPJT</span>
+                              </div>
+                              <div className="bank-detail-row">
+                                <span className="bank-label">BRANCH CODE:</span>
+                                <span className="bank-value">123</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="footer-bottom">
+                            <span>VAT REG. TIN: 006-893-360-000</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Quotation Footer */}
+                          <div>cc: admin/acctg/Engineering</div>
+                          <div>Admin Quotation Template v3.0-2025</div>
+                        </>
+                      )}
                     </div>
 
                   </div>

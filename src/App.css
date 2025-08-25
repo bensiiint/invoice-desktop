@@ -215,6 +215,24 @@ body {
   gap: 16px;
 }
 
+/* Responsive grid for additional fields */
+@media (min-width: 1200px) {
+  .quotation-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+  .quotation-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  
+  .quotation-grid .input-group:nth-child(4),
+  .quotation-grid .input-group:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Input Groups */
 .input-group {
   display: flex;
@@ -231,6 +249,13 @@ body {
   font-size: 12px;
   font-weight: 500;
   color: #374151;
+}
+
+.optional-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .form-input,
