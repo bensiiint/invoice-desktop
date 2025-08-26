@@ -356,8 +356,8 @@
 
 /* Billing Statement - Simple Clean Header Layout */
 .header-visual.billing-header {
-  min-height: 120px;
-  margin-bottom: 20px;
+  min-height: 100px;
+  margin-bottom: 10px;
   padding-bottom: 0;
   border-bottom: none;
   display: flex;
@@ -412,14 +412,13 @@
   color: #000;
 }
 
-/* Hide quotation details completely in billing mode */
-.billing-header .quotation-details-visual {
-  display: none;
-}
-
-/* Hide right details completely in billing mode */
-.billing-header .right-details-visual {
-  display: none;
+/* Billing Details Positioning - constrain to page margins */
+.billing-header + .quotation-details-visual {
+  position: absolute;
+  right: 8mm;
+  top: 190px;
+  width: 70mm;
+  max-width: 70mm;
 }
 
 .company-info-visual {
@@ -464,7 +463,7 @@
 
 .detail-value-visual {
   border-bottom: 1px solid black;
-  min-width: 150px;
+  min-width: 120px;
   padding-bottom: 3px;
   text-align: center;
   font-size: 11px;
@@ -690,4 +689,69 @@
     margin: 0 !important;
     padding: 8mm !important;
   }
+}
+
+/* Billing Mode - Bottom alignment for details sections */
+.billing-header ~ .contact-section-visual {
+  min-height: 110px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.billing-header ~ * .quotation-details-visual {
+  height: 110px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Hide terms section in billing mode to make room for bank details */
+.quotation-visual-exact:has(.billing-header) .terms-visual {
+  display: none;
+}
+
+/* Bank Details Section Styling for Billing Statement */
+.bank-details-section {
+  margin-bottom: 15px;
+  font-size: 11px;
+  color: #000;
+  border: 2px solid #000;
+  padding: 10px;
+  margin-top: -30px;
+}
+
+.bank-details-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #000;
+}
+
+.bank-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+}
+
+.bank-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.bank-label {
+  font-weight: normal;
+  min-width: 200px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.bank-value {
+  font-weight: normal;
+  font-size: 11px;
+  flex: 1;
+  word-wrap: break-word;
+  line-height: 1.3;
 }

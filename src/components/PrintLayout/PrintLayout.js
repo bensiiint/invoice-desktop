@@ -8,7 +8,8 @@ clientInfo,
 quotationDetails,
 tasks,
 baseRates,
-isPreview = false
+isPreview = false,
+printMode = 'quotation'
 }) => {
   // Calculate actual task count including overhead + nothing follow row (only main tasks)
   const mainTasks = tasks.filter(task => task.isMainTask);
@@ -89,7 +90,7 @@ isPreview = false
       <div className={`quotation-visual-exact task-count-${actualTaskCount} ${isPreview ? 'preview-scale' : ''}`}>
         
         {/* Header Section */}
-        <div className="header-visual">
+        <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
           {/* Logo */}
           <div className="logo-visual">
             <img src={Logo} alt="Company Logo" />
@@ -98,40 +99,75 @@ isPreview = false
           {/* Center Text */}
           <div className="center-text-visual">
             <div className="company-name-visual">
-              KUSAKABE & MAENO<br/>
-              TECH., INC
+              {printMode === 'billing' 
+                ? 'KUSAKABE & MAENO TECH., INC'
+                : <>KUSAKABE & MAENO<br/>TECH., INC</>
+              }
             </div>
+            
+            {printMode === 'billing' && (
+              <div className="company-address-visual">
+                Vital Industrial Properties Inc., Bldg B. Unit 2B First Cavite<br/>
+                Industrial Estate, Langkaan, Dasmarinas,Cavite, Philippines<br/>
+                Vat Reg. TIN: 008-883-390-000
+              </div>
+            )}
+            
             <div className="quotation-title-visual">
-              Quotation
+              {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
             </div>
           </div>
 
-          {/* Right Details */}
-          <div className="right-details-visual">
-            <div className="company-info-visual">
-              <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
-              {companyInfo.address}<br/>
-              {companyInfo.city}<br/>
-              {companyInfo.location}<br/>
-              {companyInfo.phone}
+          {/* Right Details - Only show for quotation mode */}
+          {printMode === 'billing' ? null : (
+            <div className="right-details-visual">
+              <div className="company-info-visual">
+                <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+                {companyInfo.address}<br/>
+                {companyInfo.city}<br/>
+                {companyInfo.location}<br/>
+                {companyInfo.phone}
+              </div>
+              
+              <div className="quotation-details-visual">
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Quotation No.:</span>
+                  <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+                </div>
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Reference No.:</span>
+                  <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
+                </div>
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Date:</span>
+                  <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+                </div>
+              </div>
             </div>
-            
-            <div className="quotation-details-visual">
-              <div className="detail-row-visual">
-                <span className="detail-label-visual">Quotation No.:</span>
-                <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
-              </div>
-              <div className="detail-row-visual">
-                <span className="detail-label-visual">Reference No.:</span>
-                <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
-              </div>
-              <div className="detail-row-visual">
-                <span className="detail-label-visual">Date:</span>
-                <span className="detail-value-visual">{quotationDetails.date || ''}</span>
-              </div>
+          )}
+        </div>
+
+        {/* Billing Details Section - Use exact same implementation as quotation details */}
+        {printMode === 'billing' && (
+          <div className="quotation-details-visual">
+            <div className="detail-row-visual">
+              <span className="detail-label-visual">DATE:</span>
+              <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+            </div>
+            <div className="detail-row-visual">
+              <span className="detail-label-visual">Invoice No.:</span>
+              <span className="detail-value-visual">{quotationDetails.invoiceNo || ''}</span>
+            </div>
+            <div className="detail-row-visual">
+              <span className="detail-label-visual">Quotation No.:</span>
+              <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+            </div>
+            <div className="detail-row-visual">
+              <span className="detail-label-visual">Job Order No.:</span>
+              <span className="detail-value-visual">{quotationDetails.jobOrderNo || ''}</span>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Contact Section */}
         <div className="contact-section-visual">
@@ -227,7 +263,7 @@ isPreview = false
             <div className="signature-left-visual">
               <div className="sig-label-visual">Prepared by:</div>
               <div className="sig-line-visual"></div>
-              <div className="sig-name-visual">MR. MICHAEL PENANO</div>
+              <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
               <div className="sig-title-visual">Engineering Manager</div>
             </div>
             <div className="signature-right-visual"></div>

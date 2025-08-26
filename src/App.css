@@ -408,21 +408,21 @@ body {
 
 /* Hierarchical Task Styling */
 .main-task-row {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border-left: 4px solid #10b981;
   font-weight: 500;
 }
 
 .main-task-row:hover {
-  background: linear-gradient(135deg, #e0f2fe 0%, #cffafe 100%) !important;
+  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%) !important;
   transform: translateX(2px);
   transition: all 0.2s ease;
 }
 
 .selected-main-task {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
-  border-left: 4px solid #2563eb;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%) !important;
+  border-left: 4px solid #059669;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 .sub-task-row {
