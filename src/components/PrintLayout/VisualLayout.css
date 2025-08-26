@@ -677,6 +677,27 @@
   text-align: left;
 }
 
+/* Page break styles for pagination */
+.quotation-visual-exact[style*="pageBreakBefore"] {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* Continuation note styling */
+.table-visual .continuation-note {
+  text-align: center !important;
+  font-weight: bold;
+  font-style: italic;
+  color: #333;
+  letter-spacing: 1px;
+  background-color: #f9f9f9 !important;
+}
+
+/* Second page header adjustments */
+.quotation-visual-exact:has([style*="pageBreakBefore"]) .header-visual {
+  margin-bottom: 20px; /* Reduced margin for second page */
+}
+
 /* Responsive scaling for preview - REMOVED TO MATCH PRINT LAYOUT SIZE */
 /* .quotation-visual-exact.preview-scale {
   transform: scale(0.8);
@@ -688,6 +709,12 @@
     transform: none !important;
     margin: 0 !important;
     padding: 8mm !important;
+  }
+  
+  /* Force page breaks in print mode */
+  .quotation-visual-exact[style*="pageBreakBefore"] {
+    page-break-before: always !important;
+    break-before: page !important;
   }
 }
 

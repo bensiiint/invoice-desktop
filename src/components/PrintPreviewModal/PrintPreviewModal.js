@@ -51,12 +51,35 @@ const PrintPreviewModal = memo(({
     return 1.0;
   }, []);
 
-  // Memoize calculations for print layout
-  const { taskTotals, grandTotal, overheadTotal, actualTaskCount, maxRows, mainTasks } = useMemo(() => {
+  // Memoize pagination logic and calculations
+  const { 
+    firstPageTasks, 
+    secondPageTasks, 
+    needsPagination, 
+    useCompression,
+    taskTotals: firstPageTaskTotals, 
+    secondPageTaskTotals,
+    grandTotal, 
+    overheadTotal, 
+    actualTaskCount, 
+    maxRows, 
+    mainTasks,
+    totalPages
+  } = useMemo(() => {
     // Filter only main tasks for display
     const mainTasks = tasks.filter(task => task.isMainTask);
     
-    const totals = mainTasks.map((task) => {
+    // Pagination logic based on assembly row count
+    const assemblyRowCount = mainTasks.length; // Only count actual assembly rows
+    const needsPagination = assemblyRowCount >= 16;
+    const useCompression = assemblyRowCount >= 13 && assemblyRowCount <= 15;
+    
+    // Split tasks for pagination
+    const firstPageTasks = needsPagination ? mainTasks.slice(0, 15) : mainTasks; // Show 15 rows on first page when paginating
+    const secondPageTasks = needsPagination ? mainTasks.slice(15) : [];
+    
+    // Calculate first page totals
+    const firstPageTotals = firstPageTasks.map((task) => {
       // Calculate main task hours and minutes
       const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
       
@@ -76,24 +99,66 @@ const PrintPreviewModal = memo(({
       const basicLabor = aggregatedHours * baseRates.timeChargeRate;
       const overtime = aggregatedOvertime * baseRates.overtimeRate;
       const software = aggregatedSoftware * baseRates.softwareRate;
-      return basicLabor + overtime + software; // Task subtotal without overhead
+      return basicLabor + overtime + software;
     });
 
-    const subtotalWithoutOverhead = totals.reduce((sum, total) => sum + total, 0);
+    // Calculate second page totals (if needed)
+    const secondPageTotals = needsPagination ? secondPageTasks.map((task) => {
+      // Calculate main task hours and minutes
+      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+      
+      // Aggregate sub-task totals
+      const subTasks = tasks.filter(t => t.parentId === task.id);
+      let aggregatedHours = mainTotalHours;
+      let aggregatedOvertime = task.overtimeHours;
+      let aggregatedSoftware = (task.softwareUnits || 0);
+      
+      subTasks.forEach(subTask => {
+        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
+        aggregatedHours += subTotalHours;
+        aggregatedOvertime += subTask.overtimeHours;
+        aggregatedSoftware += (subTask.softwareUnits || 0);
+      });
+      
+      const basicLabor = aggregatedHours * baseRates.timeChargeRate;
+      const overtime = aggregatedOvertime * baseRates.overtimeRate;
+      const software = aggregatedSoftware * baseRates.softwareRate;
+      return basicLabor + overtime + software;
+    }) : [];
+
+    const firstPageSubtotal = firstPageTotals.reduce((sum, total) => sum + total, 0);
+    const secondPageSubtotal = secondPageTotals.reduce((sum, total) => sum + total, 0);
+    const subtotalWithoutOverhead = firstPageSubtotal + secondPageSubtotal;
     const overhead = subtotalWithoutOverhead * (baseRates.overheadPercentage / 100);
     const grand = subtotalWithoutOverhead + overhead;
     
-    // Calculate task count and max rows (including nothing follow row)
+    // Calculate task count and max rows
     const taskCount = mainTasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
-    const rows = taskCount > 10 ? Math.min(taskCount, 20) : 10;
+    const rows = (() => {
+      if (needsPagination) {
+        return 15; // Fixed 15 rows on first page when paginating
+      } else if (useCompression) {
+        return taskCount; // Use actual count for compression
+      } else {
+        return taskCount > 10 ? Math.min(taskCount, 20) : 10; // Dynamic max rows for normal view
+      }
+    })();
+    
+    const totalPages = needsPagination ? 2 : 1;
     
     return { 
-      taskTotals: totals, 
+      firstPageTasks,
+      secondPageTasks,
+      needsPagination,
+      useCompression,
+      taskTotals: firstPageTotals,
+      secondPageTaskTotals: secondPageTotals,
       grandTotal: grand,
       overheadTotal: overhead,
       actualTaskCount: taskCount,
       maxRows: rows,
-      mainTasks // Also return filtered main tasks
+      mainTasks,
+      totalPages
     };
   }, [tasks, baseRates]);
 
@@ -682,6 +747,540 @@ const PrintPreviewModal = memo(({
     }
   }, [quotationDetails.quotationNo, quotationDetails.invoiceNo, printMode]);
 
+  // Render first page
+  const renderFirstPage = () => (
+    <div className={`quotation-visual-exact ${useCompression ? `task-count-${actualTaskCount}` : ''}`}>
+      
+      {/* Header Section */}
+      <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
+        {/* Logo */}
+        <div className="logo-visual">
+          <img src={Logo} alt="Company Logo" />
+        </div>
+
+        {/* Center Text */}
+        <div className="center-text-visual">
+          <div className="company-name-visual">
+            {printMode === 'billing' 
+              ? 'KUSAKABE & MAENO TECH., INC'
+              : <>KUSAKABE & MAENO<br/>TECH., INC</>
+            }
+          </div>
+          
+          {printMode === 'billing' && (
+            <div className="company-address-visual">
+              Vital Industrial Properties Inc., Bldg B. Unit 2B First Cavite<br/>
+              Industrial Estate, Langkaan, Dasmarinas,Cavite, Philippines<br/>
+              Vat Reg. TIN: 008-883-390-000
+            </div>
+          )}
+          
+          <div className="quotation-title-visual">
+            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
+          </div>
+        </div>
+
+        {/* Right Details - Only show for quotation mode */}
+        {printMode === 'billing' ? null : (
+          <div className="right-details-visual">
+            <div className="company-info-visual">
+              <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+              {companyInfo.address}<br/>
+              {companyInfo.city}<br/>
+              {companyInfo.location}<br/>
+              {companyInfo.phone}
+            </div>
+            
+            <div className="quotation-details-visual">
+              <>
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Quotation No.:</span>
+                  <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+                </div>
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Reference No.:</span>
+                  <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
+                </div>
+                <div className="detail-row-visual">
+                  <span className="detail-label-visual">Date:</span>
+                  <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+                </div>
+              </>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Billing Details Section - Use exact same implementation as quotation details */}
+      {printMode === 'billing' && (
+        <div className="quotation-details-visual">
+          <div className="detail-row-visual">
+            <span className="detail-label-visual">DATE:</span>
+            <span className="detail-value-visual">{quotationDetails.date || ''}</span>
+          </div>
+          <div className="detail-row-visual">
+            <span className="detail-label-visual">Invoice No.:</span>
+            <span className="detail-value-visual">{quotationDetails.invoiceNo || ''}</span>
+          </div>
+          <div className="detail-row-visual">
+            <span className="detail-label-visual">Quotation No.:</span>
+            <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
+          </div>
+          <div className="detail-row-visual">
+            <span className="detail-label-visual">Job Order No.:</span>
+            <span className="detail-value-visual">{quotationDetails.jobOrderNo || ''}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Section */}
+      <div className="contact-section-visual">
+        {printMode === 'billing' ? null : (
+          <div className="quotation-to-visual">Quotation to:</div>
+        )}
+        <div className="client-details-visual">
+          <div className="client-company-name">{clientInfo.company}</div>
+          <div className="client-person-name">{clientInfo.contact}</div>
+          {clientInfo.address}<br/>
+          {clientInfo.phone}
+        </div>
+      </div>
+
+      {/* Table */}
+      <table className="table-visual">
+        <thead>
+          <tr>
+            <th className="col-no">NO.</th>
+            <th className="col-reference">REFERENCE NO.</th>
+            <th className="col-description">DESCRIPTION</th>
+            <th className="col-unit">HOURS</th>
+            <th className="col-unitpage">UNIT PAGE</th>
+            <th className="col-type">TYPE</th>
+            <th className="col-price">PRICE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Task rows */}
+          {firstPageTasks.map((task, index) => {
+            const aggregatedHours = getAggregatedHours(task, mainTasks);
+            const unitPageCount = getUnitPageCount(task);
+            return (
+              <tr key={task.id}>
+                <td>{index + 1}</td>
+                <td>{task.referenceNumber || ''}</td>
+                <td className="description-cell">{task.description}</td>
+                <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
+                <td>{unitPageCount}</td>
+                <td>{task.type || '3D'}</td>
+                <td className="price-cell">{formatCurrency(firstPageTaskTotals[index])}</td>
+              </tr>
+            );
+          })}
+          
+          {/* Administrative overhead row - only on first page when not paginating */}
+          {!needsPagination && baseRates.overheadPercentage > 0 && (
+            <tr>
+              <td></td>
+              <td>Administrative overhead</td>
+              <td className="description-cell"></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td className="price-cell">{formatCurrency(overheadTotal)}</td>
+            </tr>
+          )}
+          
+          {/* Nothing Follow row - only on first page when not paginating */}
+          {!needsPagination && (
+            <tr>
+              <td></td>
+              <td></td>
+              <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          )}
+          
+          {/* Empty rows to fill space when not paginating */}
+          {!needsPagination && Array.from({ length: Math.max(0, maxRows - firstPageTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
+            <tr key={`empty-${i}`}>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+          ))}
+          
+          {/* Continuation note when paginating */}
+          {needsPagination && (
+            <tr>
+              <td></td>
+              <td></td>
+              <td className="description-cell nothing-follow">--- CONTINUED ON NEXT PAGE ---</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          )}
+          
+          {/* Total row - only on first page when not paginating */}
+          {!needsPagination && (
+            <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
+              <td colSpan="6" style={{textAlign: 'center'}}>Total Amount</td>
+              <td className="price-cell">{formatCurrency(grandTotal)}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* Terms - only show when not paginating */}
+      {!needsPagination && (
+        <div className="terms-visual">
+          Upon receipt of this quotation sheet, kindly send us one copy with your signature.<br/><br/>
+          The price will be changed without prior notice due to frequent changes of conversion rate.
+        </div>
+      )}
+
+      {/* Signatures - only show when not paginating */}
+      {!needsPagination && (
+        <div className="signatures-visual">
+          {printMode === 'billing' ? (
+            <>
+              {/* Billing Statement Signatures */}
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Prepared by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual">Approved by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+                </div>
+              </div>
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual"></div>
+                  <div className="sig-name-visual"></div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual"></div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Quotation Signatures */}
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Prepared by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+                  <div className="sig-title-visual">Engineering Manager</div>
+                </div>
+                <div className="signature-right-visual"></div>
+              </div>
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Approved by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                  <div className="sig-title-visual">President</div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual">Received by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">(Signature Over Printed Name)</div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Footer - only show when not paginating */}
+      {!needsPagination && (
+        <div className="footer-visual">
+          {printMode === 'billing' ? (
+            <>
+              {/* Billing Statement Footer with Bank Details */}
+              <div className="bank-details-section">
+                <div className="bank-details-title">BANK DETAILS (Yen)</div>
+                <div className="bank-details-grid">
+                  <div className="bank-detail-row">
+                    <span className="bank-label">BANK NAME:</span>
+                    <span className="bank-value">RIZAL COMMERCIAL BANK CORPORATION</span>
+                  </div>
+                  <div className="bank-detail-row">
+                    <span className="bank-label">SAVINGS ACCOUNT NAME:</span>
+                    <span className="bank-value">KUSAKABE & MAENO TECH INC.</span>
+                  </div>
+                  <div className="bank-detail-row">
+                    <span className="bank-label">SAVINGS ACCOUNT NUMBER:</span>
+                    <span className="bank-value">0000000011581337</span>
+                  </div>
+                  <div className="bank-detail-row">
+                    <span className="bank-label">BANK ADDRESS:</span>
+                    <span className="bank-value">RCBC DASMARINAS BRANCH RCBS BLDG. FCIE COMPOUND, GOVERNOR'S DRIVE LANGKAAN, DASMARINAS CAVITE</span>
+                  </div>
+                  <div className="bank-detail-row">
+                    <span className="bank-label">SWIFT CODE:</span>
+                    <span className="bank-value">RCBCPHMM</span>
+                  </div>
+                  <div className="bank-detail-row">
+                    <span className="bank-label">BRANCH CODE:</span>
+                    <span className="bank-value">358</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Quotation Footer */}
+              <div>cc: admin/acctg/Engineering</div>
+              <div>Admin Quotation Template v3.0-2025</div>
+            </>
+          )}
+        </div>
+      )}
+
+    </div>
+  );
+
+  // Render second page (when needed)
+  const renderSecondPage = () => (
+    <div className="quotation-visual-exact" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
+      
+      {/* Header Section - Same as first page but without right details */}
+      <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
+        {/* Logo */}
+        <div className="logo-visual">
+          <img src={Logo} alt="Company Logo" />
+        </div>
+
+        {/* Center Text */}
+        <div className="center-text-visual">
+          <div className="company-name-visual">
+            {printMode === 'billing' 
+              ? 'KUSAKABE & MAENO TECH., INC'
+              : <>KUSAKABE & MAENO<br/>TECH., INC</>
+            }
+          </div>
+          
+          {printMode === 'billing' && (
+            <div className="company-address-visual">
+              Vital Industrial Properties Inc., Bldg B. Unit 2B First Cavite<br/>
+              Industrial Estate, Langkaan, Dasmarinas,Cavite, Philippines<br/>
+              Vat Reg. TIN: 008-883-390-000
+            </div>
+          )}
+          
+          <div className="quotation-title-visual">
+            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'} (Continued)
+          </div>
+        </div>
+      </div>
+
+      {/* Table Continuation */}
+      <table className="table-visual" style={{ marginTop: '40px' }}>
+        <thead>
+          <tr>
+            <th className="col-no">NO.</th>
+            <th className="col-reference">REFERENCE NO.</th>
+            <th className="col-description">DESCRIPTION</th>
+            <th className="col-unit">HOURS</th>
+            <th className="col-unitpage">UNIT PAGE</th>
+            <th className="col-type">TYPE</th>
+            <th className="col-price">PRICE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Second page task rows - continue numbering */}
+          {secondPageTaskTotals.map((total, index) => {
+            const task = firstPageTasks.length > 15 ? mainTasks[firstPageTasks.length + index] : mainTasks[15 + index];
+            const aggregatedHours = getAggregatedHours(task, mainTasks);
+            const unitPageCount = getUnitPageCount(task);
+            const taskNumber = firstPageTasks.length + index + 1; // Continue numbering from first page
+            return (
+              <tr key={task.id}>
+                <td>{taskNumber}</td>
+                <td>{task.referenceNumber || ''}</td>
+                <td className="description-cell">{task.description}</td>
+                <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
+                <td>{unitPageCount}</td>
+                <td>{task.type || '3D'}</td>
+                <td className="price-cell">{formatCurrency(total)}</td>
+              </tr>
+            );
+          })}
+          
+          {/* Administrative overhead row */}
+          {baseRates.overheadPercentage > 0 && (
+            <tr>
+              <td></td>
+              <td>Administrative overhead</td>
+              <td className="description-cell"></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td className="price-cell">{formatCurrency(overheadTotal)}</td>
+            </tr>
+          )}
+          
+          {/* Nothing Follow row */}
+          <tr>
+            <td></td>
+            <td></td>
+            <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          
+          {/* Calculate remaining empty rows for second page */}
+          {Array.from({ 
+            length: Math.max(0, 10 - secondPageTaskTotals.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) 
+          }, (_, i) => (
+            <tr key={`empty-page2-${i}`}>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+          ))}
+          
+          {/* Total row */}
+          <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
+            <td colSpan="6" style={{textAlign: 'center'}}>Total Amount</td>
+            <td className="price-cell">{formatCurrency(grandTotal)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Terms */}
+      <div className="terms-visual">
+        Upon receipt of this quotation sheet, kindly send us one copy with your signature.<br/><br/>
+        The price will be changed without prior notice due to frequent changes of conversion rate.
+      </div>
+
+      {/* Signatures */}
+      <div className="signatures-visual">
+        {printMode === 'billing' ? (
+          <>
+            {/* Billing Statement Signatures */}
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Prepared by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual">Approved by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+              </div>
+            </div>
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual"></div>
+                <div className="sig-name-visual"></div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual"></div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Quotation Signatures */}
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Prepared by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+                <div className="sig-title-visual">Engineering Manager</div>
+              </div>
+              <div className="signature-right-visual"></div>
+            </div>
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Approved by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                <div className="sig-title-visual">President</div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual">Received by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">(Signature Over Printed Name)</div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="footer-visual">
+        {printMode === 'billing' ? (
+          <>
+            {/* Billing Statement Footer with Bank Details */}
+            <div className="bank-details-section">
+              <div className="bank-details-title">BANK DETAILS (Yen)</div>
+              <div className="bank-details-grid">
+                <div className="bank-detail-row">
+                  <span className="bank-label">BANK NAME:</span>
+                  <span className="bank-value">RIZAL COMMERCIAL BANK CORPORATION</span>
+                </div>
+                <div className="bank-detail-row">
+                  <span className="bank-label">SAVINGS ACCOUNT NAME:</span>
+                  <span className="bank-value">KUSAKABE & MAENO TECH INC.</span>
+                </div>
+                <div className="bank-detail-row">
+                  <span className="bank-label">SAVINGS ACCOUNT NUMBER:</span>
+                  <span className="bank-value">0000000011581337</span>
+                </div>
+                <div className="bank-detail-row">
+                  <span className="bank-label">BANK ADDRESS:</span>
+                  <span className="bank-value">RCBC DASMARINAS BRANCH RCBS BLDG. FCIE COMPOUND, GOVERNOR'S DRIVE LANGKAAN, DASMARINAS CAVITE</span>
+                </div>
+                <div className="bank-detail-row">
+                  <span className="bank-label">SWIFT CODE:</span>
+                  <span className="bank-value">RCBCPHMM</span>
+                </div>
+                <div className="bank-detail-row">
+                  <span className="bank-label">BRANCH CODE:</span>
+                  <span className="bank-value">358</span>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Quotation Footer */}
+            <div>cc: admin/acctg/Engineering</div>
+            <div>Admin Quotation Template v3.0-2025</div>
+          </>
+        )}
+      </div>
+
+    </div>
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -752,289 +1351,11 @@ const PrintPreviewModal = memo(({
                   ref={previewRef}
                   className="preview-content"
                 >
-                  {/* SIMPLE VISUAL LAYOUT - EXACTLY WHAT YOU SEE */}
-                  <div className={`quotation-visual-exact task-count-${actualTaskCount}`}>
-                    
-                    {/* Header Section */}
-                    <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
-                      {/* Logo */}
-                      <div className="logo-visual">
-                        <img src={Logo} alt="Company Logo" />
-                      </div>
-
-                      {/* Center Text */}
-                      <div className="center-text-visual">
-                        <div className="company-name-visual">
-                          {printMode === 'billing' 
-                            ? 'KUSAKABE & MAENO TECH., INC'
-                            : <>KUSAKABE & MAENO<br/>TECH., INC</>
-                          }
-                        </div>
-                        
-                        {printMode === 'billing' && (
-                          <div className="company-address-visual">
-                            Vital Industrial Properties Inc., Bldg B. Unit 2B First Cavite<br/>
-                            Industrial Estate, Langkaan, Dasmarinas,Cavite, Philippines<br/>
-                            Vat Reg. TIN: 008-883-390-000
-                          </div>
-                        )}
-                        
-                        <div className="quotation-title-visual">
-                          {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
-                        </div>
-                      </div>
-
-                      {/* Right Details - Only show for quotation mode */}
-                      {printMode === 'billing' ? null : (
-                        <div className="right-details-visual">
-                          <div className="company-info-visual">
-                            <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
-                            {companyInfo.address}<br/>
-                            {companyInfo.city}<br/>
-                            {companyInfo.location}<br/>
-                            {companyInfo.phone}
-                          </div>
-                          
-                          <div className="quotation-details-visual">
-                            <>
-                              <div className="detail-row-visual">
-                                <span className="detail-label-visual">Quotation No.:</span>
-                                <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
-                              </div>
-                              <div className="detail-row-visual">
-                                <span className="detail-label-visual">Reference No.:</span>
-                                <span className="detail-value-visual">{quotationDetails.referenceNo || ''}</span>
-                              </div>
-                              <div className="detail-row-visual">
-                                <span className="detail-label-visual">Date:</span>
-                                <span className="detail-value-visual">{quotationDetails.date || ''}</span>
-                              </div>
-                            </>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Billing Details Section - Use exact same implementation as quotation details */}
-                    {printMode === 'billing' && (
-                      <div className="quotation-details-visual">
-                        <div className="detail-row-visual">
-                          <span className="detail-label-visual">DATE:</span>
-                          <span className="detail-value-visual">{quotationDetails.date || ''}</span>
-                        </div>
-                        <div className="detail-row-visual">
-                          <span className="detail-label-visual">Invoice No.:</span>
-                          <span className="detail-value-visual">{quotationDetails.invoiceNo || ''}</span>
-                        </div>
-                        <div className="detail-row-visual">
-                          <span className="detail-label-visual">Quotation No.:</span>
-                          <span className="detail-value-visual">{quotationDetails.quotationNo || ''}</span>
-                        </div>
-                        <div className="detail-row-visual">
-                          <span className="detail-label-visual">Job Order No.:</span>
-                          <span className="detail-value-visual">{quotationDetails.jobOrderNo || ''}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Contact Section */}
-                    <div className="contact-section-visual">
-                      {printMode === 'billing' ? null : (
-                        <div className="quotation-to-visual">Quotation to:</div>
-                      )}
-                      <div className="client-details-visual">
-                        <div className="client-company-name">{clientInfo.company}</div>
-                        <div className="client-person-name">{clientInfo.contact}</div>
-                        {clientInfo.address}<br/>
-                        {clientInfo.phone}
-                      </div>
-                    </div>
-
-                    {/* Table */}
-                    <table className="table-visual">
-                      <thead>
-                        <tr>
-                          <th className="col-no">NO.</th>
-                          <th className="col-reference">REFERENCE NO.</th>
-                          <th className="col-description">DESCRIPTION</th>
-                          <th className="col-unit">HOURS</th>
-                          <th className="col-unitpage">UNIT PAGE</th>
-                          <th className="col-type">TYPE</th>
-                          <th className="col-price">PRICE</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Task rows */}
-                        {mainTasks.map((task, index) => {
-                          const aggregatedHours = getAggregatedHours(task, mainTasks);
-                          const unitPageCount = getUnitPageCount(task);
-                          return (
-                            <tr key={task.id}>
-                              <td>{index + 1}</td>
-                              <td>{task.referenceNumber || ''}</td>
-                              <td className="description-cell">{task.description}</td>
-                              <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
-                              <td>{unitPageCount}</td>
-                              <td>{task.type || '3D'}</td>
-                              <td className="price-cell">{formatCurrency(taskTotals[index])}</td>
-                            </tr>
-                          );
-                        })}
-                        
-                        {/* Administrative overhead row */}
-                        {baseRates.overheadPercentage > 0 && (
-                          <tr>
-                            <td></td>
-                            <td>Administrative overhead</td>
-                            <td className="description-cell"></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td className="price-cell">{formatCurrency(overheadTotal)}</td>
-                          </tr>
-                        )}
-                        
-                        {/* Nothing Follow row - security feature */}
-                        <tr>
-                          <td></td>
-                          <td></td>
-                          <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        
-                        {/* Empty rows to fill space - dynamic based on phase (reduced by 1 for nothing follow row) */}
-                        {Array.from({ length: Math.max(0, maxRows - mainTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
-                          <tr key={`empty-${i}`}>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                          </tr>
-                        ))}
-                        
-                        {/* Total row */}
-                        <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
-                          <td colSpan="6" style={{textAlign: 'center'}}>Total Amount</td>
-                          <td className="price-cell">{formatCurrency(grandTotal)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    {/* Terms */}
-                    <div className="terms-visual">
-                      Upon receipt of this quotation sheet, kindly send us one copy with your signature.<br/><br/>
-                      The price will be changed without prior notice due to frequent changes of conversion rate.
-                    </div>
-
-                    {/* Signatures */}
-                    <div className="signatures-visual">
-                      {printMode === 'billing' ? (
-                        <>
-                          {/* Billing Statement Signatures */}
-                          <div className="signature-row-visual">
-                            <div className="signature-left-visual">
-                              <div className="sig-label-visual">Prepared by:</div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
-                            </div>
-                            <div className="signature-right-visual">
-                              <div className="sig-label-visual">Approved by:</div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-                            </div>
-                          </div>
-                          <div className="signature-row-visual">
-                            <div className="signature-left-visual">
-                              <div className="sig-label-visual"></div>
-                              <div className="sig-name-visual"></div>
-                            </div>
-                            <div className="signature-right-visual">
-                              <div className="sig-label-visual"></div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {/* Quotation Signatures */}
-                          <div className="signature-row-visual">
-                            <div className="signature-left-visual">
-                              <div className="sig-label-visual">Prepared by:</div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-                              <div className="sig-title-visual">Engineering Manager</div>
-                            </div>
-                            <div className="signature-right-visual"></div>
-                          </div>
-                          <div className="signature-row-visual">
-                            <div className="signature-left-visual">
-                              <div className="sig-label-visual">Approved by:</div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-                              <div className="sig-title-visual">President</div>
-                            </div>
-                            <div className="signature-right-visual">
-                              <div className="sig-label-visual">Received by:</div>
-                              <div className="sig-line-visual"></div>
-                              <div className="sig-name-visual">(Signature Over Printed Name)</div>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="footer-visual">
-                      {printMode === 'billing' ? (
-                        <>
-                          {/* Billing Statement Footer with Bank Details */}
-                          <div className="bank-details-section">
-                            <div className="bank-details-title">BANK DETAILS (Yen)</div>
-                            <div className="bank-details-grid">
-                              <div className="bank-detail-row">
-                                <span className="bank-label">BANK NAME:</span>
-                                <span className="bank-value">RIZAL COMMERCIAL BANK CORPORATION</span>
-                              </div>
-                              <div className="bank-detail-row">
-                                <span className="bank-label">SAVINGS ACCOUNT NAME:</span>
-                                <span className="bank-value">KUSAKABE & MAENO TECH INC.</span>
-                              </div>
-                              <div className="bank-detail-row">
-                                <span className="bank-label">SAVINGS ACCOUNT NUMBER:</span>
-                                <span className="bank-value">0000000011581337</span>
-                              </div>
-                              <div className="bank-detail-row">
-                                <span className="bank-label">BANK ADDRESS:</span>
-                                <span className="bank-value">RCBC DASMARINAS BRANCH RCBS BLDG. FCIE COMPOUND, GOVERNOR'S DRIVE LANGKAAN, DASMARINAS CAVITE</span>
-                              </div>
-                              <div className="bank-detail-row">
-                                <span className="bank-label">SWIFT CODE:</span>
-                                <span className="bank-value">RCBCPHMM</span>
-                              </div>
-                              <div className="bank-detail-row">
-                                <span className="bank-label">BRANCH CODE:</span>
-                                <span className="bank-value">358</span>
-                              </div>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {/* Quotation Footer */}
-                          <div>cc: admin/acctg/Engineering</div>
-                          <div>Admin Quotation Template v3.0-2025</div>
-                        </>
-                      )}
-                    </div>
-
-                  </div>
+                  {/* Render first page */}
+                  {renderFirstPage()}
+                  
+                  {/* Render second page if needed */}
+                  {needsPagination && renderSecondPage()}
                 </div>
               </div>
             </div>
@@ -1043,7 +1364,7 @@ const PrintPreviewModal = memo(({
             <div className="preview-info">
               <span className="page-info">
                 <FileText size={14} />
-                Page 1 of 1 • A4 Portrait
+                Page {totalPages > 1 ? `1-${totalPages}` : '1'} of {totalPages} • A4 Portrait
               </span>
               <span className="zoom-info">100% zoom</span>
             </div>
