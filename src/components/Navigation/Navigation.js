@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import {
   FileText,
-  Building2,
   Save,
   FolderOpen,
   Printer,
@@ -18,9 +17,9 @@ const Navigation = memo(({
   return (
     <nav className="top-nav">
       <div className="nav-brand">
-        <Building2 className="brand-icon" />
+        <img src="./icon.png" alt="KMTI Logo" className="brand-icon" />
         <div className="brand-text">
-          <h1>KMTI Quotation App</h1>
+          <h1>KMTI Quotation & Billing Statement App</h1>
           {currentFilePath && (
             <span className="file-status">
               {currentFilePath} {hasUnsavedChanges && "• Edited"}

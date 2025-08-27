@@ -439,8 +439,9 @@
   position: relative;
   padding: 0; /* Remove padding to let Figma layout handle spacing */
   display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Align to top for document layout */
+  flex-direction: column; /* Stack pages vertically */
+  justify-content: flex-start; /* Start from top */
+  align-items: center; /* Center horizontally */
 }
 
 /* Preview Info Bar */
@@ -1281,6 +1282,11 @@
 @media print {
   .print-preview-modal {
     display: none;
+  }
+  
+  /* Hide page separators during actual printing */
+  .page-separator {
+    display: none !important;
   }
 }
 

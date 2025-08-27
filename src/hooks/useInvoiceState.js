@@ -54,47 +54,7 @@ export function useInvoiceState() {
   });
 
   // Tasks State - Updated for hierarchical structure
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      description: "受入れデータ機械配管図面仕様の検討・修正",
-      referenceNumber: "",
-      hours: 5,
-      minutes: 0,
-      overtimeHours: 3,
-      softwareUnits: 43,
-      type: "3D",
-      unitType: "JD",
-      isMainTask: true,
-      parentId: null,
-    },
-    {
-      id: 11,
-      description: "Sub-task: Data analysis",
-      referenceNumber: "",
-      hours: 2,
-      minutes: 30,
-      overtimeHours: 1,
-      softwareUnits: 10,
-      type: "3D",
-      unitType: "JD",
-      isMainTask: false,
-      parentId: 1,
-    },
-    {
-      id: 2,
-      description: "Administrative Overhead",
-      referenceNumber: "",
-      hours: 0,
-      minutes: 0,
-      overtimeHours: 0,
-      softwareUnits: 0,
-      type: "3D",
-      unitType: "LS",
-      isMainTask: true,
-      parentId: null,
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
 
   // Base Rates State
   const [baseRates, setBaseRates] = useState({
@@ -298,10 +258,10 @@ export function useInvoiceState() {
     setSelectedMainTaskId(null);
 
     setBaseRates({
-      timeChargeRate: 0,
+      timeChargeRate: 2700,
       otHoursMultiplier: 1.3,
-      overtimeRate: 0,
-      softwareRate: 0,
+      overtimeRate: 3300,
+      softwareRate: 500,
       overheadPercentage: 20,
     });
 
@@ -353,10 +313,10 @@ export function useInvoiceState() {
     setSelectedMainTaskId(null);
 
     setBaseRates(data.baseRates || {
-      timeChargeRate: 0,
+      timeChargeRate: 2700,
       otHoursMultiplier: 1.3,
-      overtimeRate: 0,
-      softwareRate: 0,
+      overtimeRate: 3300,
+      softwareRate: 500,
       overheadPercentage: 20,
     });
 

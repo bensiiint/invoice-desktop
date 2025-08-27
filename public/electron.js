@@ -1,7 +1,9 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
 const fs = require('fs');
+
+// More reliable way to detect development vs production
+const isDev = !app.isPackaged;
 
 let mainWindow;
 

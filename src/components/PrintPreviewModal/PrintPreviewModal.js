@@ -1066,7 +1066,29 @@ const PrintPreviewModal = memo(({
 
   // Render second page (when needed)
   const renderSecondPage = () => (
-    <div className="quotation-visual-exact" style={{ pageBreakBefore: 'always', marginTop: '40px' }}>
+    <>
+      {/* Page Break Separator - Only visible in preview */}
+      <div className="page-separator" style={{
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f8f9fa',
+        border: '2px dashed #ccc',
+        borderRadius: '8px',
+        margin: '40px 0',
+        color: '#666',
+        fontWeight: 'bold',
+        fontSize: '14px',
+        letterSpacing: '1px'
+      }}>
+        PAGE 2
+      </div>
+      
+      <div className="quotation-visual-exact" style={{ 
+        pageBreakBefore: 'always',
+        marginTop: '0' // Reset since separator handles spacing
+      }}>
       
       {/* Header Section - Same as first page but without right details */}
       <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
@@ -1096,6 +1118,19 @@ const PrintPreviewModal = memo(({
             {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
           </div>
         </div>
+
+        {/* Right Details - Include company info on second page too */}
+        {printMode === 'billing' ? null : (
+          <div className="right-details-visual">
+            <div className="company-info-visual">
+              <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+              {companyInfo.address}<br/>
+              {companyInfo.city}<br/>
+              {companyInfo.location}<br/>
+              {companyInfo.phone}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table Continuation */}
@@ -1281,7 +1316,9 @@ const PrintPreviewModal = memo(({
         )}
       </div>
 
-    </div>
+      </div>
+
+    </>
   );
 
   if (!isOpen) return null;
