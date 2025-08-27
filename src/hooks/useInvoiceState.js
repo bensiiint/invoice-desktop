@@ -13,13 +13,13 @@ function debounce(func, wait) {
   };
 }
 
-// Generate quotation number
-function generateQuotationNumber(date, sequential = "001", revision = "R01") {
+// Generate quotation number - removed R01 revision by default
+function generateQuotationNumber(date, sequential = "001") {
   const dateObj = new Date(date);
   const year = dateObj.getFullYear().toString().slice(-2);
   const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
   const day = dateObj.getDate().toString().padStart(2, "0");
-  return `KMTE-${year}${month}${day}-${sequential}-${revision}`;
+  return `KMTE-${year}${month}${day}-${sequential}`;
 }
 
 export function useInvoiceState() {
@@ -46,7 +46,7 @@ export function useInvoiceState() {
     const quotationNo = generateQuotationNumber(today);
     return {
       quotationNo,
-      referenceNo: "24-003-016",
+      referenceNo: "", // Default blank reference number
       date: today,
       invoiceNo: "", // For billing statement
       jobOrderNo: "", // For billing statement
