@@ -867,7 +867,6 @@ const PrintPreviewModal = memo(({
             <th className="col-no">NO.</th>
             <th className="col-reference">REFERENCE NO.</th>
             <th className="col-description">DESCRIPTION</th>
-            <th className="col-unit">HOURS</th>
             <th className="col-unitpage">UNIT PAGE</th>
             <th className="col-type">TYPE</th>
             <th className="col-price">PRICE</th>
@@ -883,7 +882,6 @@ const PrintPreviewModal = memo(({
                 <td>{index + 1}</td>
                 <td>{task.referenceNumber || ''}</td>
                 <td className="description-cell">{task.description}</td>
-                <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
                 <td>{unitPageCount}</td>
                 <td>{task.type || '3D'}</td>
                 <td className="price-cell">{formatCurrency(firstPageTaskTotals[index])}</td>
@@ -899,7 +897,6 @@ const PrintPreviewModal = memo(({
               <td className="description-cell"></td>
               <td></td>
               <td></td>
-              <td></td>
               <td className="price-cell">{formatCurrency(overheadTotal)}</td>
             </tr>
           )}
@@ -913,14 +910,12 @@ const PrintPreviewModal = memo(({
               <td></td>
               <td></td>
               <td></td>
-              <td></td>
             </tr>
           )}
           
           {/* Empty rows to fill space when not paginating */}
           {!needsPagination && Array.from({ length: Math.max(0, maxRows - firstPageTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
             <tr key={`empty-${i}`}>
-              <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
@@ -939,14 +934,13 @@ const PrintPreviewModal = memo(({
               <td></td>
               <td></td>
               <td></td>
-              <td></td>
             </tr>
           )}
           
           {/* Total row - only on first page when not paginating */}
           {!needsPagination && (
             <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
-              <td colSpan="6" style={{textAlign: 'center'}}>Total Amount</td>
+              <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
               <td className="price-cell">{formatCurrency(grandTotal)}</td>
             </tr>
           )}
@@ -1111,7 +1105,6 @@ const PrintPreviewModal = memo(({
             <th className="col-no">NO.</th>
             <th className="col-reference">REFERENCE NO.</th>
             <th className="col-description">DESCRIPTION</th>
-            <th className="col-unit">HOURS</th>
             <th className="col-unitpage">UNIT PAGE</th>
             <th className="col-type">TYPE</th>
             <th className="col-price">PRICE</th>
@@ -1129,7 +1122,6 @@ const PrintPreviewModal = memo(({
                 <td>{taskNumber}</td>
                 <td>{task.referenceNumber || ''}</td>
                 <td className="description-cell">{task.description}</td>
-                <td>{formatHours(aggregatedHours.hours, aggregatedHours.minutes)}</td>
                 <td>{unitPageCount}</td>
                 <td>{task.type || '3D'}</td>
                 <td className="price-cell">{formatCurrency(total)}</td>
@@ -1145,7 +1137,6 @@ const PrintPreviewModal = memo(({
               <td className="description-cell"></td>
               <td></td>
               <td></td>
-              <td></td>
               <td className="price-cell">{formatCurrency(overheadTotal)}</td>
             </tr>
           )}
@@ -1155,7 +1146,6 @@ const PrintPreviewModal = memo(({
             <td></td>
             <td></td>
             <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
-            <td></td>
             <td></td>
             <td></td>
             <td></td>
@@ -1172,13 +1162,12 @@ const PrintPreviewModal = memo(({
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-              <td>&nbsp;</td>
             </tr>
           ))}
           
           {/* Total row */}
           <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
-            <td colSpan="6" style={{textAlign: 'center'}}>Total Amount</td>
+            <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
             <td className="price-cell">{formatCurrency(grandTotal)}</td>
           </tr>
         </tbody>
