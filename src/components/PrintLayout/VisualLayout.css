@@ -698,6 +698,13 @@
   margin-bottom: 20px; /* Reduced margin for second page */
 }
 
+/* Second page row limit logic:
+   - MAXIMUM 27 ASSEMBLY ROWS (main tasks) - enforced at component level
+   - UNLIMITED PARTS ROWS (sub-tasks) - no limit on parts for those 27 assemblies
+   - Rows 16-22: Default spacing with 5 empty rows
+   - Rows 23-27: No empty rows, overhead/total moves down naturally
+   - Maximum 27 assembly rows total (excluding overhead and total) */
+
 /* Responsive scaling for preview - REMOVED TO MATCH PRINT LAYOUT SIZE */
 /* .quotation-visual-exact.preview-scale {
   transform: scale(0.8);

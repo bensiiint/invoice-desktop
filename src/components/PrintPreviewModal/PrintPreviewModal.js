@@ -64,10 +64,11 @@ const PrintPreviewModal = memo(({
     actualTaskCount, 
     maxRows, 
     mainTasks,
-    totalPages
+    totalPages,
+    secondPageEmptyRows
   } = useMemo(() => {
-    // Filter only main tasks for display
-    const mainTasks = tasks.filter(task => task.isMainTask);
+    // Filter only main tasks for display - LIMIT ASSEMBLY ROWS TO 27
+    const mainTasks = tasks.filter(task => task.isMainTask).slice(0, 27); // MAXIMUM 27 ASSEMBLY ROWS
     
     // Pagination logic based on assembly row count
     const assemblyRowCount = mainTasks.length; // Only count actual assembly rows
@@ -77,6 +78,18 @@ const PrintPreviewModal = memo(({
     // Split tasks for pagination
     const firstPageTasks = needsPagination ? mainTasks.slice(0, 15) : mainTasks; // Show 15 rows on first page when paginating
     const secondPageTasks = needsPagination ? mainTasks.slice(15) : [];
+    
+    // Calculate empty rows for second page - limit expansion after row 22
+    const secondPageEmptyRows = (() => {
+      if (!needsPagination) return 0;
+      const secondPageTaskCount = secondPageTasks.length;
+      
+      if (secondPageTaskCount <= 7) { // Rows 16-22 (7 rows max with default spacing)
+        return Math.max(0, 5); // Default 5 empty rows
+      } else { // Rows 23-27 (use available space, no empty rows)
+        return 0; // No empty rows, let overhead/total move down naturally
+      }
+    })();
     
     // Calculate first page totals
     const firstPageTotals = firstPageTasks.map((task) => {
@@ -158,7 +171,8 @@ const PrintPreviewModal = memo(({
       actualTaskCount: taskCount,
       maxRows: rows,
       mainTasks,
-      totalPages
+      totalPages,
+      secondPageEmptyRows
     };
   }, [tasks, baseRates]);
 
@@ -1085,7 +1099,7 @@ const PrintPreviewModal = memo(({
           )}
           
           <div className="quotation-title-visual">
-            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'} (Continued)
+            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
           </div>
         </div>
       </div>
@@ -1147,9 +1161,9 @@ const PrintPreviewModal = memo(({
             <td></td>
           </tr>
           
-          {/* Calculate remaining empty rows for second page */}
+          {/* Calculate remaining empty rows for second page - based on row limit logic */}
           {Array.from({ 
-            length: Math.max(0, 10 - secondPageTaskTotals.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) 
+            length: secondPageEmptyRows 
           }, (_, i) => (
             <tr key={`empty-page2-${i}`}>
               <td>&nbsp;</td>

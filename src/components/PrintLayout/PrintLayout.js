@@ -11,8 +11,8 @@ baseRates,
 isPreview = false,
 printMode = 'quotation'
 }) => {
-  // Calculate actual task count including overhead + nothing follow row (only main tasks)
-  const mainTasks = tasks.filter(task => task.isMainTask);
+  // Calculate actual task count including overhead + nothing follow row (only main tasks) - LIMIT ASSEMBLY ROWS TO 27
+  const mainTasks = tasks.filter(task => task.isMainTask).slice(0, 27); // MAXIMUM 27 ASSEMBLY ROWS
   const actualTaskCount = mainTasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
   
   // Pagination logic based on assembly row count
@@ -24,7 +24,7 @@ printMode = 'quotation'
   const firstPageTasks = needsPagination ? mainTasks.slice(0, 15) : mainTasks; // Show 15 rows on first page when paginating
   const secondPageTasks = needsPagination ? mainTasks.slice(15) : [];
   
-  // Calculate max rows based on pagination
+  // Calculate max rows based on pagination - limit second page to 27 total rows
   const maxRows = (() => {
     if (needsPagination) {
       return 15; // Fixed 15 rows on first page when paginating
@@ -32,6 +32,18 @@ printMode = 'quotation'
       return actualTaskCount; // Use actual count for compression
     } else {
       return actualTaskCount > 10 ? Math.min(actualTaskCount, 20) : 10; // Dynamic max rows for normal view
+    }
+  })();
+  
+  // Calculate empty rows for second page - limit expansion after row 22
+  const secondPageEmptyRows = (() => {
+    if (!needsPagination) return 0;
+    const secondPageTaskCount = secondPageTasks.length;
+    
+    if (secondPageTaskCount <= 7) { // Rows 16-22 (7 rows max with default spacing)
+      return Math.max(0, 5); // Default 5 empty rows
+    } else { // Rows 23-27 (use available space, no empty rows)
+      return 0; // No empty rows, let overhead/total move down naturally
     }
   })();
 
@@ -408,7 +420,7 @@ printMode = 'quotation'
           )}
           
           <div className="quotation-title-visual">
-            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'} (Continued)
+            {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
           </div>
         </div>
       </div>
@@ -466,9 +478,9 @@ printMode = 'quotation'
             <td></td>
           </tr>
           
-          {/* Calculate remaining empty rows for second page */}
+          {/* Calculate remaining empty rows for second page - based on row limit logic */}
           {Array.from({ 
-            length: Math.max(0, 10 - secondPageTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) 
+            length: secondPageEmptyRows 
           }, (_, i) => (
             <tr key={`empty-page2-${i}`}>
               <td>&nbsp;</td>
