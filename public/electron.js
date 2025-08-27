@@ -14,6 +14,7 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
+    title: "", // Remove the title - only show icon
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       nodeIntegration: false, // Better security and performance
