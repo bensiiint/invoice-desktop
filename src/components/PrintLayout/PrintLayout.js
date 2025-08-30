@@ -18,7 +18,7 @@ printMode = 'quotation'
   // Pagination logic based on assembly row count
   const assemblyRowCount = mainTasks.length; // Only count actual assembly rows
   const needsPagination = assemblyRowCount >= 16;
-  const useCompression = assemblyRowCount >= 13 && assemblyRowCount <= 15;
+  const useCompression = assemblyRowCount >= 9 && assemblyRowCount <= 15 && !needsPagination;
   
   // Split tasks for pagination
   const firstPageTasks = needsPagination ? mainTasks.slice(0, 15) : mainTasks; // Show 15 rows on first page when paginating
@@ -162,7 +162,7 @@ printMode = 'quotation'
 
   // Render first page
   const renderFirstPage = () => (
-    <div className={`quotation-visual-exact ${useCompression ? `task-count-${actualTaskCount}` : ''} ${isPreview ? 'preview-scale' : ''}`}>
+    <div className={`quotation-visual-exact ${needsPagination ? '' : `task-count-${actualTaskCount}`} ${isPreview ? 'preview-scale' : ''}`}>
       
       {/* Header Section */}
       <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
@@ -389,7 +389,7 @@ printMode = 'quotation'
   const renderSecondPage = () => (
     <div className={`quotation-visual-exact ${isPreview ? 'preview-scale' : ''}`} style={{ pageBreakBefore: 'always' }}>
       
-      {/* Header Section - Same as first page but without right details */}
+      {/* Header Section - Same as first page but with only company address on right */}
       <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
         {/* Logo */}
         <div className="logo-visual">
@@ -417,6 +417,21 @@ printMode = 'quotation'
             {printMode === 'billing' ? 'BILLING STATEMENT' : 'Quotation'}
           </div>
         </div>
+
+        {/* Right Details - Include company address on second page too */}
+        {printMode === 'billing' ? null : (
+          <div className="right-details-visual">
+            <div className="company-info-visual">
+              <div className="company-name-info">KUSAKABE & MAENO TECH., INC</div>
+              {companyInfo.address}<br/>
+              {companyInfo.city}<br/>
+              {companyInfo.location}<br/>
+              {companyInfo.phone}
+            </div>
+            
+            {/* No quotation details on second page */}
+          </div>
+        )}
       </div>
 
       {/* No client details on second page per requirements */}

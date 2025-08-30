@@ -73,7 +73,7 @@ const PrintPreviewModal = memo(({
     // Pagination logic based on assembly row count
     const assemblyRowCount = mainTasks.length; // Only count actual assembly rows
     const needsPagination = assemblyRowCount >= 16;
-    const useCompression = assemblyRowCount >= 13 && assemblyRowCount <= 15;
+    const useCompression = assemblyRowCount >= 9 && assemblyRowCount <= 15 && !needsPagination;
     
     // Split tasks for pagination
     const firstPageTasks = needsPagination ? mainTasks.slice(0, 15) : mainTasks; // Show 15 rows on first page when paginating
@@ -763,7 +763,7 @@ const PrintPreviewModal = memo(({
 
   // Render first page
   const renderFirstPage = () => (
-    <div className={`quotation-visual-exact ${useCompression ? `task-count-${actualTaskCount}` : ''}`}>
+    <div className={`quotation-visual-exact ${needsPagination ? '' : `task-count-${actualTaskCount}`}`}>
       
       {/* Header Section */}
       <div className={`header-visual ${printMode === 'billing' ? 'billing-header' : ''}`}>
@@ -1129,6 +1129,8 @@ const PrintPreviewModal = memo(({
               {companyInfo.location}<br/>
               {companyInfo.phone}
             </div>
+            
+            {/* No quotation details on second page */}
           </div>
         )}
       </div>

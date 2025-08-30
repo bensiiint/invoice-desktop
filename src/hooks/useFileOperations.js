@@ -21,48 +21,13 @@ export function useFileOperations({
     resetToNew();
   }, [hasUnsavedChanges, resetToNew]);
 
-  // Save Invoice - Fixed to prevent immediate completion dialog
+  // Save Invoice - Simplified to use only download method (more reliable)
   const saveInvoice = useCallback(async () => {
     try {
       const data = getSaveData();
       const jsonString = JSON.stringify(data, null, 2);
       
-      // Try File System Access API first (for browsers that support it)
-      if ("showSaveFilePicker" in window && window.isSecureContext) {
-        try {
-          const fileHandle = await window.showSaveFilePicker({
-            types: [
-              {
-                description: "KMTI Quotation files",
-                accept: {
-                  "application/json": [".json"],
-                },
-              },
-            ],
-            suggestedName: `KMTI_Quotation_${
-              new Date().toISOString().split("T")[0]
-            }.json`,
-          });
-
-          const writable = await fileHandle.createWritable();
-          await writable.write(jsonString);
-          await writable.close();
-
-          // Only show success message after actual save completion
-          setCurrentFilePath(fileHandle.name);
-          setHasUnsavedChanges(false);
-          alert(`Quotation saved successfully as ${fileHandle.name}!`);
-          return;
-          
-        } catch (fsError) {
-          if (fsError.name === "AbortError") {
-            return; // User cancelled - no message needed
-          }
-          // If File System API fails, fall through to download method
-        }
-      }
-      
-      // Fallback: Download method (works in Electron and all browsers)
+      // Use download method (works in Electron and all browsers)
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
