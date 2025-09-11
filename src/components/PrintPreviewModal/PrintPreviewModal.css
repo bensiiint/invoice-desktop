@@ -1643,27 +1643,27 @@
   display: none !important;
 }
 
-/* Bank Details Section Styling for Billing Statement - Preview Mode */
+/* Bank Details Section Styling for Billing Statement - Preview Mode - MAXIMUM COMPRESSION */
 .preview-content .bank-details-section {
-  margin-bottom: 15px !important;
-  font-size: 11px !important;
+  margin-bottom: 10px !important; /* Tightest margin */
+  font-size: 8px !important; /* Maximum compression as default */
   color: #000 !important;
-  border: 1px solid #000 !important;
-  padding: 10px !important;
-  margin-top: -30px !important;
+  border: 2px solid #000 !important; /* Match print layout */
+  padding: 5px !important; /* Tightest padding */
+  margin-top: 15px !important; /* Adjusted for maximum compression */
 }
 
 .preview-content .bank-details-title {
   font-weight: bold !important;
-  margin-bottom: 8px !important;
-  font-size: 11px !important;
+  margin-bottom: 3px !important; /* Tightest margin */
+  font-size: 8px !important; /* Maximum compression as default */
   color: #000 !important;
 }
 
 .preview-content .bank-details-grid {
   display: grid !important;
   grid-template-columns: 1fr !important;
-  gap: 3px !important;
+  gap: 1px !important; /* Tightest gap */
 }
 
 .preview-content .bank-detail-row {
@@ -1676,13 +1676,13 @@
 .preview-content .bank-label {
   font-weight: normal !important;
   min-width: 200px !important;
-  font-size: 11px !important;
+  font-size: 8px !important; /* Maximum compression as default */
   flex-shrink: 0 !important;
 }
 
 .preview-content .bank-value {
   font-weight: normal !important;
-  font-size: 11px !important;
+  font-size: 8px !important; /* Maximum compression as default */
   flex: 1 !important;
   word-wrap: break-word !important;
   line-height: 1.3 !important;

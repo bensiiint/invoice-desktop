@@ -746,27 +746,27 @@
   display: none;
 }
 
-/* Bank Details Section Styling for Billing Statement */
+/* Bank Details Section Styling for Billing Statement - DEFAULT MAXIMUM COMPRESSION */
 .bank-details-section {
-  margin-bottom: 15px;
-  font-size: 11px;
+  margin-bottom: 10px;
+  font-size: 8px !important; /* Maximum compression as default */
   color: #000;
   border: 2px solid #000;
-  padding: 10px;
-  margin-top: -30px;
+  padding: 5px !important; /* Tightest padding */
+  margin-top: 15px; /* Adjusted for maximum compression */
 }
 
 .bank-details-title {
   font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 11px;
+  margin-bottom: 3px !important; /* Tightest margin */
+  font-size: 8px !important; /* Maximum compression as default */
   color: #000;
 }
 
 .bank-details-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3px;
+  gap: 1px !important; /* Tightest gap */
 }
 
 .bank-detail-row {
@@ -779,14 +779,109 @@
 .bank-label {
   font-weight: normal;
   min-width: 200px;
-  font-size: 11px;
+  font-size: 8px !important; /* Maximum compression as default */
   flex-shrink: 0;
 }
 
 .bank-value {
   font-weight: normal;
-  font-size: 11px;
+  font-size: 8px !important; /* Maximum compression as default */
   flex: 1;
   word-wrap: break-word;
   line-height: 1.3;
 }
+
+/* ===== BILLING STATEMENT RESPONSIVE SPACING (MIRRORS QUOTATION BEHAVIOR) ===== */
+/* These rules make billing statement react to additional rows just like quotation does */
+
+/* Row 11: First compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-11 .signatures-visual {
+  margin-bottom: 18px; /* Reduced from 20px */
+}
+
+/* Row 12: More compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-12 .signatures-visual {
+  margin-bottom: 15px; /* Further reduced */
+}
+
+/* Row 13: Maximum content compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-13 .signatures-visual {
+  margin-bottom: 12px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-13 .signature-row-visual {
+  margin-bottom: 10px;
+  min-height: 75px;
+}
+
+/* Row 14: Content stays fixed, table compression begins - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-14 .signatures-visual {
+  margin-bottom: 10px; /* Fixed position */
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-14 .signature-row-visual {
+  margin-bottom: 8px;
+  min-height: 70px;
+}
+
+/* Row 15: More compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-15 .signatures-visual {
+  margin-bottom: 8px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-15 .signature-row-visual {
+  margin-bottom: 5px;
+  min-height: 65px;
+}
+
+/* Row 16: Increased compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-16 .signatures-visual {
+  margin-bottom: 5px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-16 .signature-row-visual {
+  margin-bottom: 3px;
+  min-height: 60px;
+}
+
+/* Row 17: More compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-17 .signatures-visual {
+  margin-bottom: 3px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-17 .signature-row-visual {
+  margin-bottom: 2px;
+  min-height: 55px;
+}
+
+/* Row 18: Aggressive compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-18 .signatures-visual {
+  margin-bottom: 2px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-18 .signature-row-visual {
+  margin-bottom: 1px;
+  min-height: 50px;
+}
+
+/* Row 19: Near maximum compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-19 .signatures-visual {
+  margin-bottom: 1px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-19 .signature-row-visual {
+  margin-bottom: 1px;
+  min-height: 45px;
+}
+
+/* Row 20: Maximum compression - billing statement */
+.quotation-visual-exact:has(.billing-header).task-count-20 .signatures-visual {
+  margin-bottom: 1px;
+}
+
+.quotation-visual-exact:has(.billing-header).task-count-20 .signature-row-visual {
+  margin-bottom: 1px;
+  min-height: 40px;
+}
+
+/* Bank details now use maximum compression by default - no progressive sizing needed */
