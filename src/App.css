@@ -346,20 +346,24 @@ body {
   flex-direction: column;
 }
 
-/* Fixed Header */
+/* Fixed Header - Reserve space for scrollbar */
 .tasks-table-header-fixed {
   border-bottom: 1px solid #e5e7eb;
   background: #f9fafb;
+  padding-right: 8px; /* Reserve space for scrollbar */
+  box-sizing: border-box;
 }
 
 .tasks-table-header-fixed .tasks-table {
   margin-bottom: 0;
 }
 
-/* Fixed Value Basis Row */
+/* Fixed Value Basis Row - Reserve space for scrollbar */
 .tasks-table-value-basis-fixed {
   border-bottom: 1px solid #e5e7eb;
   background: #ffffff;
+  padding-right: 8px; /* Reserve space for scrollbar */
+  box-sizing: border-box;
 }
 
 .tasks-table-value-basis-fixed .tasks-table {
@@ -369,7 +373,7 @@ body {
 /* Scrollable Task Rows */
 .tasks-table-body-scrollable {
   max-height: 450px; /* Height for approximately 10 rows */
-  overflow-y: auto;
+  overflow-y: scroll; /* Always show scrollbar to maintain consistent width */
   background: #ffffff;
   flex: 1;
 }
@@ -378,9 +382,9 @@ body {
   margin-bottom: 0;
 }
 
-/* Custom Scrollbar for Task Rows */
+/* Custom Scrollbar for Task Rows - Match padding width exactly */
 .tasks-table-body-scrollable::-webkit-scrollbar {
-  width: 8px;
+  width: 8px; /* Match the padding-right in header and footer */
 }
 
 .tasks-table-body-scrollable::-webkit-scrollbar-track {
@@ -396,10 +400,12 @@ body {
   background: #9ca3af;
 }
 
-/* Fixed Grand Total Row */
+/* Fixed Grand Total Row - Reserve space for scrollbar */
 .tasks-table-footer-fixed {
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
+  padding-right: 8px; /* Reserve space for scrollbar */
+  box-sizing: border-box;
 }
 
 .tasks-table-footer-fixed .tasks-table {
@@ -961,6 +967,14 @@ body {
   text-align: center !important;
   font-size: 14px;
   font-weight: 600;
+}
+
+.grand-total-combined-cell {
+  text-align: right !important;
+  font-size: 18px;
+  font-weight: 700;
+  color: white !important;
+  padding-right: 12px !important;
 }
 
 .grand-total-value-cell {

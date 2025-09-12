@@ -416,14 +416,9 @@ const TasksTable = memo(({
             <table className="tasks-table">
               <tfoot>
                 <tr className="grand-total-row">
-                  <td className="row-number-cell">-</td>
-                  <td colSpan="10" className="grand-total-label-cell">
-                    <strong>Grand Total</strong>
+                  <td colSpan="13" className="grand-total-combined-cell">
+                    <strong>Grand Total:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{formatCurrency(grandTotal)}</strong>
                   </td>
-                  <td className="grand-total-value-cell">
-                    <strong>{formatCurrency(grandTotal)}</strong>
-                  </td>
-                  <td className="action-cell"></td>
                 </tr>
               </tfoot>
             </table>
