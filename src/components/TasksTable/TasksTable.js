@@ -9,6 +9,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
 
   return (
     <tr className="value-basis-row">
+      <td className="row-number-cell">-</td>
       <td className="basis-value-cell">-</td>
       <td className="description-cell">
         <strong>Value Basis</strong>
@@ -75,7 +76,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
   );
 });
 
-const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect }) => {
+const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect, rowNumber }) => {
   const handleUpdate = useCallback((field, value) => {
     onUpdate(task.id, field, value);
   }, [task.id, onUpdate]);
@@ -99,6 +100,9 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
       onClick={handleMainTaskClick}
       style={{ cursor: task.isMainTask ? 'pointer' : 'default' }}
     >
+      <td className="row-number-cell">
+        <span className="row-number">{rowNumber}</span>
+      </td>
       <td className="reference-cell">
         <input
           type="text"
@@ -241,7 +245,10 @@ const TasksTable = memo(({
   onBaseRateUpdate,
 }) => {
   // Memoize calculations to prevent recalculation on every render
-  const { taskTotals, grandTotal } = useMemo(() => {
+  const { taskTotals, grandTotal, mainTaskCount } = useMemo(() => {
+    const mainTasks = tasks.filter(task => task.isMainTask);
+    const mainTaskCount = mainTasks.length;
+    
     const totals = tasks.map((task) => {
       // Calculate total hours from hours and minutes
       const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
@@ -284,7 +291,7 @@ const TasksTable = memo(({
       .filter((_, index) => tasks[index].isMainTask)
       .reduce((sum, task) => sum + task.total, 0);
     
-    return { taskTotals: totals, grandTotal: grand };
+    return { taskTotals: totals, grandTotal: grand, mainTaskCount };
   }, [tasks, baseRates]);
 
   // Memoize formatCurrency function
@@ -314,9 +321,14 @@ const TasksTable = memo(({
         <DollarSign className="card-icon tasks" />
         <h2>Computation Table</h2>
         <div className="task-buttons">
-          <button className="add-button" onClick={onTaskAdd}>
+          <button 
+            className="add-button" 
+            onClick={onTaskAdd}
+            disabled={mainTaskCount >= 27}
+            title={mainTaskCount >= 27 ? "Maximum 27 assembly tasks reached" : "Add assembly task"}
+          >
             <Plus className="add-icon" />
-            Add Assembly
+            Add Assembly ({mainTaskCount}/27)
           </button>
           <button 
             className="add-button sub-task-button" 
@@ -332,51 +344,90 @@ const TasksTable = memo(({
 
       <div className="card-content">
         <div className="tasks-table-container">
-          <table className="tasks-table">
-            <thead>
-              <tr>
-                <th>Ref No</th>
-                <th>Description</th>
-                <th>Hours</th>
-                <th>Minutes</th>
-                <th>Time Charge</th>
-                <th>OT Hrs</th>
-                <th>Overtime</th>
-                <th>Software</th>
-                <th>OH</th>
-                <th>Type</th>
-                <th>Total</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ValueBasisRow baseRates={baseRates} onUpdate={onBaseRateUpdate} />
+          {/* Fixed Header */}
+          <div className="tasks-table-header-fixed">
+            <table className="tasks-table">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Ref No</th>
+                  <th>Description</th>
+                  <th>Hours</th>
+                  <th>Minutes</th>
+                  <th>Time Charge</th>
+                  <th>OT Hrs</th>
+                  <th>Overtime</th>
+                  <th>Software</th>
+                  <th>OH</th>
+                  <th>Type</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
 
-              {tasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  subtotals={getTaskSubtotals(task.id)}
-                  onUpdate={onTaskUpdate}
-                  onRemove={onTaskRemove}
-                  formatCurrency={formatCurrency}
-                  isSelected={task.isMainTask && task.id === selectedMainTaskId}
-                  onMainTaskSelect={onMainTaskSelect}
-                />
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="grand-total-row">
-                <td colSpan="10" className="grand-total-label-cell">
-                  <strong>Grand Total</strong>
-                </td>
-                <td className="grand-total-value-cell">
-                  <strong>{formatCurrency(grandTotal)}</strong>
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
+          {/* Fixed Value Basis Row */}
+          <div className="tasks-table-value-basis-fixed">
+            <table className="tasks-table">
+              <tbody>
+                <ValueBasisRow baseRates={baseRates} onUpdate={onBaseRateUpdate} />
+              </tbody>
+            </table>
+          </div>
+
+          {/* Scrollable Task Rows Container */}
+          <div className="tasks-table-body-scrollable">
+            <table className="tasks-table">
+              <tbody>
+                {tasks.map((task, index) => {
+                  // Calculate hierarchical row numbers
+                  let rowNumber;
+                  if (task.isMainTask) {
+                    // Count previous main tasks to get assembly number
+                    const mainTasksBefore = tasks.slice(0, index).filter(t => t.isMainTask).length;
+                    rowNumber = mainTasksBefore + 1;
+                  } else {
+                    // For sub-tasks, count previous sub-tasks under the same parent
+                    const subTasksBefore = tasks.slice(0, index).filter(t => t.parentId === task.parentId).length;
+                    rowNumber = subTasksBefore + 1;
+                  }
+                  
+                  return (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      subtotals={getTaskSubtotals(task.id)}
+                      onUpdate={onTaskUpdate}
+                      onRemove={onTaskRemove}
+                      formatCurrency={formatCurrency}
+                      isSelected={task.isMainTask && task.id === selectedMainTaskId}
+                      onMainTaskSelect={onMainTaskSelect}
+                      rowNumber={rowNumber}
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Fixed Grand Total Row */}
+          <div className="tasks-table-footer-fixed">
+            <table className="tasks-table">
+              <tfoot>
+                <tr className="grand-total-row">
+                  <td className="row-number-cell">-</td>
+                  <td colSpan="10" className="grand-total-label-cell">
+                    <strong>Grand Total</strong>
+                  </td>
+                  <td className="grand-total-value-cell">
+                    <strong>{formatCurrency(grandTotal)}</strong>
+                  </td>
+                  <td className="action-cell"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
     </div>

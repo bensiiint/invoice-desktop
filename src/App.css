@@ -337,33 +337,179 @@ body {
   height: 16px;
 }
 
-/* Tasks Table */
+/* Tasks Table Container - Fixed Height with Scrollable Body */
 .tasks-table-container {
-  overflow-x: auto;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fixed Header */
+.tasks-table-header-fixed {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.tasks-table-header-fixed .tasks-table {
+  margin-bottom: 0;
+}
+
+/* Fixed Value Basis Row */
+.tasks-table-value-basis-fixed {
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.tasks-table-value-basis-fixed .tasks-table {
+  margin-bottom: 0;
+}
+
+/* Scrollable Task Rows */
+.tasks-table-body-scrollable {
+  max-height: 450px; /* Height for approximately 10 rows */
+  overflow-y: auto;
+  background: #ffffff;
+  flex: 1;
+}
+
+.tasks-table-body-scrollable .tasks-table {
+  margin-bottom: 0;
+}
+
+/* Custom Scrollbar for Task Rows */
+.tasks-table-body-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tasks-table-body-scrollable::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.tasks-table-body-scrollable::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.tasks-table-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Fixed Grand Total Row */
+.tasks-table-footer-fixed {
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.tasks-table-footer-fixed .tasks-table {
+  margin-bottom: 0;
+}
+
+/* Ensure consistent table layout across all sections */
+.tasks-table-header-fixed .tasks-table,
+.tasks-table-value-basis-fixed .tasks-table,
+.tasks-table-body-scrollable .tasks-table,
+.tasks-table-footer-fixed .tasks-table {
+  border: none;
+  border-radius: 0;
 }
 
 .tasks-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1180px; /* Increased for new Reference Number column */
   table-layout: fixed;
 }
 
+/* Ensure consistent column widths across all table sections */
+.tasks-table-header-fixed .tasks-table,
+.tasks-table-value-basis-fixed .tasks-table,
+.tasks-table-body-scrollable .tasks-table,
+.tasks-table-footer-fixed .tasks-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Synchronized column widths for perfect alignment */
+.tasks-table-header-fixed .tasks-table th:nth-child(1),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(1),
+.tasks-table-body-scrollable .tasks-table td:nth-child(1),
+.tasks-table-footer-fixed .tasks-table td:nth-child(1) { width: 50px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(2),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(2),
+.tasks-table-body-scrollable .tasks-table td:nth-child(2),
+.tasks-table-footer-fixed .tasks-table td:nth-child(2) { width: 80px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(3),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(3),
+.tasks-table-body-scrollable .tasks-table td:nth-child(3),
+.tasks-table-footer-fixed .tasks-table td:nth-child(3) { width: 180px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(4),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(4),
+.tasks-table-body-scrollable .tasks-table td:nth-child(4),
+.tasks-table-footer-fixed .tasks-table td:nth-child(4) { width: 70px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(5),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(5),
+.tasks-table-body-scrollable .tasks-table td:nth-child(5),
+.tasks-table-footer-fixed .tasks-table td:nth-child(5) { width: 70px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(6),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(6),
+.tasks-table-body-scrollable .tasks-table td:nth-child(6),
+.tasks-table-footer-fixed .tasks-table td:nth-child(6) { width: 90px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(7),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(7),
+.tasks-table-body-scrollable .tasks-table td:nth-child(7),
+.tasks-table-footer-fixed .tasks-table td:nth-child(7) { width: 70px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(8),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(8),
+.tasks-table-body-scrollable .tasks-table td:nth-child(8),
+.tasks-table-footer-fixed .tasks-table td:nth-child(8) { width: 90px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(9),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(9),
+.tasks-table-body-scrollable .tasks-table td:nth-child(9),
+.tasks-table-footer-fixed .tasks-table td:nth-child(9) { width: 110px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(10),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(10),
+.tasks-table-body-scrollable .tasks-table td:nth-child(10),
+.tasks-table-footer-fixed .tasks-table td:nth-child(10) { width: 80px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(11),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(11),
+.tasks-table-body-scrollable .tasks-table td:nth-child(11),
+.tasks-table-footer-fixed .tasks-table td:nth-child(11) { width: 70px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(12),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(12),
+.tasks-table-body-scrollable .tasks-table td:nth-child(12),
+.tasks-table-footer-fixed .tasks-table td:nth-child(12) { width: 100px; }
+
+.tasks-table-header-fixed .tasks-table th:nth-child(13),
+.tasks-table-value-basis-fixed .tasks-table td:nth-child(13),
+.tasks-table-body-scrollable .tasks-table td:nth-child(13),
+.tasks-table-footer-fixed .tasks-table td:nth-child(13) { width: 70px; }
+
 /* Column widths */
-.tasks-table th:nth-child(1) { width: 80px; }  /* Ref No - moved to first */
-.tasks-table th:nth-child(2) { width: 180px; } /* Description - moved to second */
-.tasks-table th:nth-child(3) { width: 70px; }  /* Hours */
-.tasks-table th:nth-child(4) { width: 70px; }  /* Minutes */
-.tasks-table th:nth-child(5) { width: 90px; }  /* Time Charge - reduced */
-.tasks-table th:nth-child(6) { width: 70px; }  /* OT Hrs - reduced */
-.tasks-table th:nth-child(7) { width: 90px; }  /* Overtime - reduced */
-.tasks-table th:nth-child(8) { width: 110px; } /* Software - reduced */
-.tasks-table th:nth-child(9) { width: 80px; }  /* OH - reduced */
-.tasks-table th:nth-child(10) { width: 70px; }  /* Type */
-.tasks-table th:nth-child(11) { width: 100px; } /* Total - reduced */
-.tasks-table th:nth-child(12) { width: 70px; }  /* Action */
+.tasks-table th:nth-child(1) { width: 50px; }  /* Row Number */
+.tasks-table th:nth-child(2) { width: 80px; }  /* Ref No */
+.tasks-table th:nth-child(3) { width: 180px; } /* Description */
+.tasks-table th:nth-child(4) { width: 70px; }  /* Hours */
+.tasks-table th:nth-child(5) { width: 70px; }  /* Minutes */
+.tasks-table th:nth-child(6) { width: 90px; }  /* Time Charge - reduced */
+.tasks-table th:nth-child(7) { width: 70px; }  /* OT Hrs - reduced */
+.tasks-table th:nth-child(8) { width: 90px; }  /* Overtime - reduced */
+.tasks-table th:nth-child(9) { width: 110px; } /* Software - reduced */
+.tasks-table th:nth-child(10) { width: 80px; }  /* OH - reduced */
+.tasks-table th:nth-child(11) { width: 70px; }  /* Type */
+.tasks-table th:nth-child(12) { width: 100px; } /* Total - reduced */
+.tasks-table th:nth-child(13) { width: 70px; }  /* Action */
 
 .tasks-table th {
   background: #f9fafb;
@@ -380,7 +526,7 @@ body {
 }
 
 .tasks-table th:first-child {
-  text-align: left;
+  text-align: center;
 }
 
 .tasks-table th:last-child {
@@ -396,7 +542,7 @@ body {
 }
 
 .tasks-table td:first-child {
-  text-align: left;
+  text-align: center;
 }
 
 .tasks-table td:last-child {
@@ -416,7 +562,6 @@ body {
 
 .main-task-row:hover {
   background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%) !important;
-  transform: translateX(2px);
   transition: all 0.2s ease;
 }
 
@@ -640,6 +785,10 @@ body {
 }
 
 .value-basis-row td:first-child {
+  text-align: center !important;
+}
+
+.value-basis-row td:nth-child(2) {
   text-align: left !important;
 }
 
@@ -651,6 +800,52 @@ body {
   text-align: center !important;
   font-weight: 600;
   color: #495057;
+}
+
+/* Row Number Cell Styling - More Minimal */
+.row-number-cell {
+  text-align: center !important;
+  vertical-align: middle;
+  font-weight: 500;
+  color: #9ca3af;
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  font-size: 12px;
+}
+
+.row-number {
+  display: inline-block;
+  min-width: 18px;
+  padding: 2px 4px;
+  background: transparent;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Row number styling for different row types - Subtle differences */
+.main-task-row .row-number {
+  background: #f0fdf4;
+  color: #166534;
+  font-weight: 600;
+  border: 1px solid #bbf7d0;
+}
+
+.selected-main-task .row-number {
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+  border: 1px solid #86efac;
+}
+
+.sub-task-row .row-number {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 400;
+  border: 1px solid #e2e8f0;
 }
 
 .basis-rate-cell {
@@ -746,7 +941,7 @@ body {
   color: #495057;
 }
 
-/* Grand Total Row */
+/* Grand Total Row - Ensure proper alignment across all sections */
 .grand-total-row {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
@@ -756,7 +951,6 @@ body {
   border-bottom: none !important;
   border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
   padding: 12px 8px;
-  text-align: center;
 }
 
 .grand-total-row td:last-child {
@@ -764,7 +958,7 @@ body {
 }
 
 .grand-total-label-cell {
-  text-align: right !important;
+  text-align: center !important;
   font-size: 14px;
   font-weight: 600;
 }
@@ -774,6 +968,7 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: white !important;
+  padding-right: 12px !important;
 }
 
 /* Print Only Layout - Hidden by default, shown during print */
@@ -798,7 +993,7 @@ body {
   }
 
   .tasks-table {
-    min-width: 980px; /* Increased for Reference Number column */
+    min-width: 1030px; /* Increased for Row Number column */
   }
 }
 
@@ -832,13 +1027,13 @@ body {
   }
 
   .tasks-table {
-    min-width: 830px; /* Increased for Reference Number column */
+    min-width: 880px; /* Increased for Row Number column */
   }
 }
 
 @media (max-width: 480px) {
   .tasks-table {
-    min-width: 730px; /* Increased for Reference Number column */
+    min-width: 780px; /* Increased for Row Number column */
   }
 
   .top-nav {
