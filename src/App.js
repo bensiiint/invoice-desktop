@@ -5,6 +5,7 @@ import {
   CompanyInfo,
   ClientInfo,
   TasksTable,
+  SignatureForm,
   PrintLayout,
   PrintPreviewModal,
 } from "./components";
@@ -22,6 +23,7 @@ function App() {
     quotationDetails,
     tasks,
     baseRates,
+    signatures,
     currentFilePath,
     hasUnsavedChanges,
     selectedMainTaskId,
@@ -35,6 +37,7 @@ function App() {
     removeTask,
     updateTask,
     updateBaseRate,
+    updateSignatures,
     setSelectedMainTaskId,
     resetToNew,
     loadData,
@@ -108,6 +111,12 @@ function App() {
               onMainTaskSelect={setSelectedMainTaskId}
               onBaseRateUpdate={updateBaseRate}
             />
+
+            {/* Signature Section */}
+            <SignatureForm
+              signatures={signatures}
+              onUpdate={(type, field, value) => updateSignatures(type, field, value)}
+            />
           </div>
         </main>
 
@@ -118,6 +127,7 @@ function App() {
           quotationDetails={quotationDetails}
           tasks={tasks}
           baseRates={baseRates}
+          signatures={signatures}
           isPreview={false}
         />
       </div>
@@ -131,6 +141,7 @@ function App() {
         quotationDetails={quotationDetails}
         tasks={tasks}
         baseRates={baseRates}
+        signatures={signatures}
       />
     </div>
   );

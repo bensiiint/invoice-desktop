@@ -72,6 +72,37 @@ export function useInvoiceState() {
   // Selected main task for adding sub-tasks
   const [selectedMainTaskId, setSelectedMainTaskId] = useState(null);
 
+  // Signatures State
+  const [signatures, setSignatures] = useState({
+    quotation: {
+      preparedBy: {
+        name: "MR. MICHAEL PEÑANO",
+        title: "Engineering Manager"
+      },
+      approvedBy: {
+        name: "MR. YUICHIRO MAENO",
+        title: "President"
+      },
+      receivedBy: {
+        label: "(Signature Over Printed Name)"
+      }
+    },
+    billing: {
+      preparedBy: {
+        name: "MS. PAULYN MURRILL BEJER",
+        title: "Accounting Staff"
+      },
+      approvedBy: {
+        name: "MR. MICHAEL PEÑANO",
+        title: "Engineering Manager"
+      },
+      finalApprover: {
+        name: "MR. YUICHIRO MAENO",
+        title: "President"
+      }
+    }
+  });
+
   // Debounced quotation number update
   const debouncedQuotationUpdate = useMemo(
     () => debounce((date) => {
@@ -211,6 +242,17 @@ export function useInvoiceState() {
     setHasUnsavedChanges(true);
   }, []);
 
+  const updateSignatures = useCallback((type, field, value) => {
+    setSignatures(prev => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        [field]: value
+      }
+    }));
+    setHasUnsavedChanges(true);
+  }, []);
+
   // Reset to new invoice
   const resetToNew = useCallback(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -263,6 +305,36 @@ export function useInvoiceState() {
       overtimeRate: 3300,
       softwareRate: 500,
       overheadPercentage: 20,
+    });
+
+    setSignatures({
+      quotation: {
+        preparedBy: {
+          name: "MR. MICHAEL PEÑANO",
+          title: "Engineering Manager"
+        },
+        approvedBy: {
+          name: "MR. YUICHIRO MAENO",
+          title: "President"
+        },
+        receivedBy: {
+          label: "(Signature Over Printed Name)"
+        }
+      },
+      billing: {
+        preparedBy: {
+          name: "MS. PAULYN MURRILL BEJER",
+          title: "Accounting Staff"
+        },
+        approvedBy: {
+          name: "MR. MICHAEL PEÑANO",
+          title: "Engineering Manager"
+        },
+        finalApprover: {
+          name: "MR. YUICHIRO MAENO",
+          title: "President"
+        }
+      }
     });
 
     setCurrentFilePath(null);
@@ -320,6 +392,36 @@ export function useInvoiceState() {
       overheadPercentage: 20,
     });
 
+    setSignatures(data.signatures || {
+      quotation: {
+        preparedBy: {
+          name: "MR. MICHAEL PEÑANO",
+          title: "Engineering Manager"
+        },
+        approvedBy: {
+          name: "MR. YUICHIRO MAENO",
+          title: "President"
+        },
+        receivedBy: {
+          label: "(Signature Over Printed Name)"
+        }
+      },
+      billing: {
+        preparedBy: {
+          name: "MS. PAULYN MURRILL BEJER",
+          title: "Accounting Staff"
+        },
+        approvedBy: {
+          name: "MR. MICHAEL PEÑANO",
+          title: "Engineering Manager"
+        },
+        finalApprover: {
+          name: "MR. YUICHIRO MAENO",
+          title: "President"
+        }
+      }
+    });
+
     setCurrentFilePath(fileName);
     setHasUnsavedChanges(false);
   }, []);
@@ -332,9 +434,10 @@ export function useInvoiceState() {
       quotationDetails,
       tasks,
       baseRates,
+      signatures,
       savedAt: new Date().toISOString(),
     };
-  }, [companyInfo, clientInfo, quotationDetails, tasks, baseRates]);
+  }, [companyInfo, clientInfo, quotationDetails, tasks, baseRates, signatures]);
 
   return {
     // State
@@ -343,6 +446,7 @@ export function useInvoiceState() {
     quotationDetails,
     tasks,
     baseRates,
+    signatures,
     currentFilePath,
     hasUnsavedChanges,
     selectedMainTaskId,
@@ -356,6 +460,7 @@ export function useInvoiceState() {
     removeTask,
     updateTask,
     updateBaseRate,
+    updateSignatures,
     setSelectedMainTaskId,
     resetToNew,
     loadData,

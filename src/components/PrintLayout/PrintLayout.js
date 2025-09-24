@@ -8,6 +8,7 @@ clientInfo,
 quotationDetails,
 tasks,
 baseRates,
+signatures,
 isPreview = false,
 printMode = 'quotation'
 }) => {
@@ -346,31 +347,63 @@ printMode = 'quotation'
       {/* Signatures - only show when not paginating */}
       {!needsPagination && (
         <div className="signatures-visual">
-          {/* First row - Prepared by */}
-          <div className="signature-row-visual">
-            <div className="signature-left-visual">
-              <div className="sig-label-visual">Prepared by:</div>
-              <div className="sig-line-visual"></div>
-              <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-              <div className="sig-title-visual">Engineering Manager</div>
-            </div>
-            <div className="signature-right-visual"></div>
-          </div>
-
-          {/* Second row - Approved by & Received by */}
-          <div className="signature-row-visual">
-            <div className="signature-left-visual">
-              <div className="sig-label-visual">Approved by:</div>
-              <div className="sig-line-visual"></div>
-              <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-              <div className="sig-title-visual">President</div>
-            </div>
-            <div className="signature-right-visual">
-              <div className="sig-label-visual">Received by:</div>
-              <div className="sig-line-visual"></div>
-              <div className="sig-name-visual">(Signature Over Printed Name)</div>
-            </div>
-          </div>
+          {printMode === 'billing' ? (
+            <>
+              {/* Billing Statement Signatures */}
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Prepared by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.billing.preparedBy.name || 'MS. PAULYN MURRILL BEJER'}</div>
+                  <div className="sig-title-visual">{signatures.billing.preparedBy.title || 'Accounting Staff'}</div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual">Approved by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.billing.approvedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                  <div className="sig-title-visual">{signatures.billing.approvedBy.title || 'Engineering Manager'}</div>
+                </div>
+              </div>
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual"></div>
+                  <div className="sig-name-visual"></div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual">Final Approver:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.billing.finalApprover.name || 'MR. YUICHIRO MAENO'}</div>
+                  <div className="sig-title-visual">{signatures.billing.finalApprover.title || 'President'}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Quotation Signatures */}
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Prepared by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.quotation.preparedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                  <div className="sig-title-visual">{signatures.quotation.preparedBy.title || 'Engineering Manager'}</div>
+                </div>
+                <div className="signature-right-visual"></div>
+              </div>
+              <div className="signature-row-visual">
+                <div className="signature-left-visual">
+                  <div className="sig-label-visual">Approved by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.quotation.approvedBy.name || 'MR. YUICHIRO MAENO'}</div>
+                  <div className="sig-title-visual">{signatures.quotation.approvedBy.title || 'President'}</div>
+                </div>
+                <div className="signature-right-visual">
+                  <div className="sig-label-visual">Received by:</div>
+                  <div className="sig-line-visual"></div>
+                  <div className="sig-name-visual">{signatures.quotation.receivedBy.label || '(Signature Over Printed Name)'}</div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -512,31 +545,63 @@ printMode = 'quotation'
 
       {/* Signatures */}
       <div className="signatures-visual">
-        {/* First row - Prepared by */}
-        <div className="signature-row-visual">
-          <div className="signature-left-visual">
-            <div className="sig-label-visual">Prepared by:</div>
-            <div className="sig-line-visual"></div>
-            <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-            <div className="sig-title-visual">Engineering Manager</div>
-          </div>
-          <div className="signature-right-visual"></div>
-        </div>
-
-        {/* Second row - Approved by & Received by */}
-        <div className="signature-row-visual">
-          <div className="signature-left-visual">
-            <div className="sig-label-visual">Approved by:</div>
-            <div className="sig-line-visual"></div>
-            <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-            <div className="sig-title-visual">President</div>
-          </div>
-          <div className="signature-right-visual">
-            <div className="sig-label-visual">Received by:</div>
-            <div className="sig-line-visual"></div>
-            <div className="sig-name-visual">(Signature Over Printed Name)</div>
-          </div>
-        </div>
+        {printMode === 'billing' ? (
+          <>
+            {/* Billing Statement Signatures */}
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Prepared by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.billing.preparedBy.name || 'MS. PAULYN MURRILL BEJER'}</div>
+                <div className="sig-title-visual">{signatures.billing.preparedBy.title || 'Accounting Staff'}</div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual">Approved by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.billing.approvedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                <div className="sig-title-visual">{signatures.billing.approvedBy.title || 'Engineering Manager'}</div>
+              </div>
+            </div>
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual"></div>
+                <div className="sig-name-visual"></div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual">Final Approver:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.billing.finalApprover.name || 'MR. YUICHIRO MAENO'}</div>
+                <div className="sig-title-visual">{signatures.billing.finalApprover.title || 'President'}</div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Quotation Signatures */}
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Prepared by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.quotation.preparedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                <div className="sig-title-visual">{signatures.quotation.preparedBy.title || 'Engineering Manager'}</div>
+              </div>
+              <div className="signature-right-visual"></div>
+            </div>
+            <div className="signature-row-visual">
+              <div className="signature-left-visual">
+                <div className="sig-label-visual">Approved by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.quotation.approvedBy.name || 'MR. YUICHIRO MAENO'}</div>
+                <div className="sig-title-visual">{signatures.quotation.approvedBy.title || 'President'}</div>
+              </div>
+              <div className="signature-right-visual">
+                <div className="sig-label-visual">Received by:</div>
+                <div className="sig-line-visual"></div>
+                <div className="sig-name-visual">{signatures.quotation.receivedBy.label || '(Signature Over Printed Name)'}</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Footer */}

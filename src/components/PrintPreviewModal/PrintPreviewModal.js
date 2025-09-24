@@ -16,7 +16,8 @@ const PrintPreviewModal = memo(({
   clientInfo,
   quotationDetails,
   tasks,
-  baseRates 
+  baseRates,
+  signatures 
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [printMode, setPrintMode] = useState('quotation'); // 'quotation' or 'billing'
@@ -965,12 +966,14 @@ const PrintPreviewModal = memo(({
                 <div className="signature-left-visual">
                   <div className="sig-label-visual">Prepared by:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
+                  <div className="sig-name-visual">{signatures.billing.preparedBy.name || 'MS. PAULYN MURRILL BEJER'}</div>
+                  <div className="sig-title-visual">{signatures.billing.preparedBy.title || 'Accounting Staff'}</div>
                 </div>
                 <div className="signature-right-visual">
                   <div className="sig-label-visual">Approved by:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+                  <div className="sig-name-visual">{signatures.billing.approvedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                  <div className="sig-title-visual">{signatures.billing.approvedBy.title || 'Engineering Manager'}</div>
                 </div>
               </div>
               <div className="signature-row-visual">
@@ -979,9 +982,10 @@ const PrintPreviewModal = memo(({
                   <div className="sig-name-visual"></div>
                 </div>
                 <div className="signature-right-visual">
-                  <div className="sig-label-visual"></div>
+                  <div className="sig-label-visual">Final Approver:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                  <div className="sig-name-visual">{signatures.billing.finalApprover.name || 'MR. YUICHIRO MAENO'}</div>
+                  <div className="sig-title-visual">{signatures.billing.finalApprover.title || 'President'}</div>
                 </div>
               </div>
             </>
@@ -992,8 +996,8 @@ const PrintPreviewModal = memo(({
                 <div className="signature-left-visual">
                   <div className="sig-label-visual">Prepared by:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-                  <div className="sig-title-visual">Engineering Manager</div>
+                  <div className="sig-name-visual">{signatures.quotation.preparedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                  <div className="sig-title-visual">{signatures.quotation.preparedBy.title || 'Engineering Manager'}</div>
                 </div>
                 <div className="signature-right-visual"></div>
               </div>
@@ -1001,13 +1005,13 @@ const PrintPreviewModal = memo(({
                 <div className="signature-left-visual">
                   <div className="sig-label-visual">Approved by:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-                  <div className="sig-title-visual">President</div>
+                  <div className="sig-name-visual">{signatures.quotation.approvedBy.name || 'MR. YUICHIRO MAENO'}</div>
+                  <div className="sig-title-visual">{signatures.quotation.approvedBy.title || 'President'}</div>
                 </div>
                 <div className="signature-right-visual">
                   <div className="sig-label-visual">Received by:</div>
                   <div className="sig-line-visual"></div>
-                  <div className="sig-name-visual">(Signature Over Printed Name)</div>
+                  <div className="sig-name-visual">{signatures.quotation.receivedBy.label || '(Signature Over Printed Name)'}</div>
                 </div>
               </div>
             </>
@@ -1225,12 +1229,14 @@ const PrintPreviewModal = memo(({
               <div className="signature-left-visual">
                 <div className="sig-label-visual">Prepared by:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">MR. PAULYN MURRILL BEJER</div>
+                <div className="sig-name-visual">{signatures.billing.preparedBy.name || 'MS. PAULYN MURRILL BEJER'}</div>
+                <div className="sig-title-visual">{signatures.billing.preparedBy.title || 'Accounting Staff'}</div>
               </div>
               <div className="signature-right-visual">
                 <div className="sig-label-visual">Approved by:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
+                <div className="sig-name-visual">{signatures.billing.approvedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                <div className="sig-title-visual">{signatures.billing.approvedBy.title || 'Engineering Manager'}</div>
               </div>
             </div>
             <div className="signature-row-visual">
@@ -1239,9 +1245,10 @@ const PrintPreviewModal = memo(({
                 <div className="sig-name-visual"></div>
               </div>
               <div className="signature-right-visual">
-                <div className="sig-label-visual"></div>
+                <div className="sig-label-visual">Final Approver:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
+                <div className="sig-name-visual">{signatures.billing.finalApprover.name || 'MR. YUICHIRO MAENO'}</div>
+                <div className="sig-title-visual">{signatures.billing.finalApprover.title || 'President'}</div>
               </div>
             </div>
           </>
@@ -1252,8 +1259,8 @@ const PrintPreviewModal = memo(({
               <div className="signature-left-visual">
                 <div className="sig-label-visual">Prepared by:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">MR. MICHAEL PEÑANO</div>
-                <div className="sig-title-visual">Engineering Manager</div>
+                <div className="sig-name-visual">{signatures.quotation.preparedBy.name || 'MR. MICHAEL PEÑANO'}</div>
+                <div className="sig-title-visual">{signatures.quotation.preparedBy.title || 'Engineering Manager'}</div>
               </div>
               <div className="signature-right-visual"></div>
             </div>
@@ -1261,13 +1268,13 @@ const PrintPreviewModal = memo(({
               <div className="signature-left-visual">
                 <div className="sig-label-visual">Approved by:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">MR. YUICHIRO MAENO</div>
-                <div className="sig-title-visual">President</div>
+                <div className="sig-name-visual">{signatures.quotation.approvedBy.name || 'MR. YUICHIRO MAENO'}</div>
+                <div className="sig-title-visual">{signatures.quotation.approvedBy.title || 'President'}</div>
               </div>
               <div className="signature-right-visual">
                 <div className="sig-label-visual">Received by:</div>
                 <div className="sig-line-visual"></div>
-                <div className="sig-name-visual">(Signature Over Printed Name)</div>
+                <div className="sig-name-visual">{signatures.quotation.receivedBy.label || '(Signature Over Printed Name)'}</div>
               </div>
             </div>
           </>
