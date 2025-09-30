@@ -12,18 +12,33 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
       <td className="row-number-cell">-</td>
       <td className="basis-value-cell">-</td>
       <td className="description-cell">
-        <strong>Value Basis</strong>
+        -
       </td>
       <td className="basis-value-cell">-</td>
       <td className="basis-value-cell">-</td>
-      <td className="basis-rate-cell">
-        <input
-          type="number"
-          value={baseRates.timeChargeRate}
-          onChange={(e) => handleUpdate('timeChargeRate', e.target.value)}
-          className="table-input number-input rate-input"
-          min="0"
-        />
+      <td className="basis-rate-cell time-charge-rates">
+        <div className="rate-input-group">
+          <div className="rate-row">
+            <label className="rate-label">2D:</label>
+            <input
+              type="number"
+              value={baseRates.timeChargeRate2D}
+              onChange={(e) => handleUpdate('timeChargeRate2D', e.target.value)}
+              className="table-input number-input rate-input rate-2d"
+              min="0"
+            />
+          </div>
+          <div className="rate-row">
+            <label className="rate-label">3D:</label>
+            <input
+              type="number"
+              value={baseRates.timeChargeRate3D}
+              onChange={(e) => handleUpdate('timeChargeRate3D', e.target.value)}
+              className="table-input number-input rate-input rate-3d"
+              min="0"
+            />
+          </div>
+        </div>
       </td>
       <td className="basis-rate-cell">
         <input
@@ -252,7 +267,9 @@ const TasksTable = memo(({
     const totals = tasks.map((task) => {
       // Calculate total hours from hours and minutes
       const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      const basicLabor = totalHours * baseRates.timeChargeRate;
+      // Get the appropriate time charge rate based on task type
+      const timeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+      const basicLabor = totalHours * timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
       
@@ -265,7 +282,8 @@ const TasksTable = memo(({
         const subTasks = tasks.filter(t => t.parentId === task.id);
         subTasks.forEach(subTask => {
           const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-          aggregatedBasicLabor += subTotalHours * baseRates.timeChargeRate;
+          const subTimeChargeRate = subTask.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+          aggregatedBasicLabor += subTotalHours * subTimeChargeRate;
           aggregatedOvertime += subTask.overtimeHours * baseRates.overtimeRate;
           aggregatedSoftware += (subTask.softwareUnits || 0) * baseRates.softwareRate;
         });

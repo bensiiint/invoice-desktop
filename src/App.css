@@ -900,7 +900,11 @@ body {
 }
 
 .value-basis-row td:nth-child(2) {
-  text-align: left !important;
+  text-align: center !important;
+}
+
+.value-basis-row .description-cell {
+  text-align: center !important;
 }
 
 .value-basis-row td:last-child {
@@ -982,6 +986,41 @@ body {
 .rate-input:focus {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Time Charge Rates Styling */
+.time-charge-rates {
+  text-align: center !important;
+}
+
+.rate-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.rate-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 20px;
+  text-align: right;
+}
+
+.rate-2d,
+.rate-3d {
+  max-width: 60px !important;
+  font-size: 11px !important;
+  padding: 4px 6px !important;
 }
 
 .calculated-cell {

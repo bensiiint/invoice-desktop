@@ -58,7 +58,8 @@ export function useInvoiceState() {
 
   // Base Rates State
   const [baseRates, setBaseRates] = useState({
-    timeChargeRate: 2700,
+    timeChargeRate2D: 2700,
+    timeChargeRate3D: 2700,
     otHoursMultiplier: 1.3,
     overtimeRate: 3300,
     softwareRate: 500,
@@ -231,8 +232,9 @@ export function useInvoiceState() {
 
       // Auto-update overtime rate when multiplier or time charge rate changes
       if (field === "otHoursMultiplier") {
-        newRates.overtimeRate = Math.round(newRates.timeChargeRate * value);
-      } else if (field === "timeChargeRate") {
+        // Use the 3D rate as the base for overtime calculation
+        newRates.overtimeRate = Math.round(newRates.timeChargeRate3D * value);
+      } else if (field === "timeChargeRate3D") {
         newRates.overtimeRate = Math.round(value * newRates.otHoursMultiplier);
       }
 
@@ -300,7 +302,8 @@ export function useInvoiceState() {
     setSelectedMainTaskId(null);
 
     setBaseRates({
-      timeChargeRate: 2700,
+      timeChargeRate2D: 2700,
+      timeChargeRate3D: 2700,
       otHoursMultiplier: 1.3,
       overtimeRate: 3300,
       softwareRate: 500,
@@ -385,7 +388,8 @@ export function useInvoiceState() {
     setSelectedMainTaskId(null);
 
     setBaseRates(data.baseRates || {
-      timeChargeRate: 2700,
+      timeChargeRate2D: 2700,
+      timeChargeRate3D: 2700,
       otHoursMultiplier: 1.3,
       overtimeRate: 3300,
       softwareRate: 500,

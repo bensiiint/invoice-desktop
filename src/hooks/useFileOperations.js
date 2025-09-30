@@ -47,7 +47,7 @@ export function useFileOperations({
       }, 100);
       
       setHasUnsavedChanges(false);
-      alert(`Quotation saved as ${fileName}!\nFile saved to your Downloads folder.`);
+      // Note: File download triggered - user chooses save location
       
     } catch (error) {
       console.error('Save failed:', error);
