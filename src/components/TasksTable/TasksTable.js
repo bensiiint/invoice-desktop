@@ -593,7 +593,7 @@ const TasksTable = memo(({
             <thead>
               <tr>
                 <th>NO.</th>
-                <th>KIT NO</th>
+                <th>REF NO</th>
                 <th>DESCRIPTION</th>
                 <th>HOURS</th>
                 <th>MINUTES</th>

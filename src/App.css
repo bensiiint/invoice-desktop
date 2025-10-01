@@ -48,7 +48,7 @@ body {
 .brand-icon-container {
   width: 40px;
   height: 40px;
-  background: #155dfc;
+  background: transparent;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -463,7 +463,7 @@ body {
 }
 
 .tasks-table th {
-  padding: 0 24px;
+  padding: 0 16px;
   font-family: 'Arimo', sans-serif;
   font-size: 12px;
   font-weight: 700;
@@ -471,38 +471,38 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   line-height: 16px;
-  text-align: left;
+  text-align: center;
   height: 64.5px;
   vertical-align: middle;
 }
 
 /* Column Widths */
 .tasks-table th:nth-child(1),
-.tasks-table td:nth-child(1) { width: 80px; } /* NO. */
+.tasks-table td:nth-child(1) { width: 70px; } /* NO. */
 .tasks-table th:nth-child(2),
-.tasks-table td:nth-child(2) { width: 100px; } /* KIT NO */
+.tasks-table td:nth-child(2) { width: 190px; } /* REF NO */
 .tasks-table th:nth-child(3),
-.tasks-table td:nth-child(3) { width: 200px; } /* DESCRIPTION */
+.tasks-table td:nth-child(3) { width: 240px; } /* DESCRIPTION */
 .tasks-table th:nth-child(4),
-.tasks-table td:nth-child(4) { width: 100px; } /* HOURS */
+.tasks-table td:nth-child(4) { width: 95px; } /* HOURS */
 .tasks-table th:nth-child(5),
-.tasks-table td:nth-child(5) { width: 110px; } /* MINUTES */
+.tasks-table td:nth-child(5) { width: 100px; } /* MINUTES */
 .tasks-table th:nth-child(6),
-.tasks-table td:nth-child(6) { width: 130px; } /* TIME CHARGE */
+.tasks-table td:nth-child(6) { width: 120px; } /* TIME CHARGE */
 .tasks-table th:nth-child(7),
-.tasks-table td:nth-child(7) { width: 100px; } /* OT RATE */
+.tasks-table td:nth-child(7) { width: 95px; } /* OT RATE */
 .tasks-table th:nth-child(8),
-.tasks-table td:nth-child(8) { width: 130px; } /* OVERTIME */
+.tasks-table td:nth-child(8) { width: 120px; } /* OVERTIME */
 .tasks-table th:nth-child(9),
-.tasks-table td:nth-child(9) { width: 140px; } /* SOFTWARE */
+.tasks-table td:nth-child(9) { width: 130px; } /* SOFTWARE */
 .tasks-table th:nth-child(10),
-.tasks-table td:nth-child(10) { width: 80px; } /* OH */
+.tasks-table td:nth-child(10) { width: 70px; } /* OH */
 .tasks-table th:nth-child(11),
-.tasks-table td:nth-child(11) { width: 100px; } /* TYPE */
+.tasks-table td:nth-child(11) { width: 95px; } /* TYPE */
 .tasks-table th:nth-child(12),
-.tasks-table td:nth-child(12) { width: 120px; } /* TOTAL */
+.tasks-table td:nth-child(12) { width: 115px; } /* TOTAL */
 .tasks-table th:nth-child(13),
-.tasks-table td:nth-child(13) { width: 120px; } /* ACTION */
+.tasks-table td:nth-child(13) { width: 110px; } /* ACTION */
 
 /* Table Body */
 .tasks-table-body {
@@ -511,13 +511,14 @@ body {
 }
 
 .tasks-table td {
-  padding: 0 24px;
+  padding: 0 16px;
   height: 56.5px;
   vertical-align: middle;
   font-family: 'Arimo', sans-serif;
   font-size: 14px;
   color: #101828;
   line-height: 20px;
+  text-align: center;
 }
 
 /* Table Inputs */
@@ -532,6 +533,7 @@ body {
   font-size: 12px;
   color: #1d1d1f;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .table-input:focus {
@@ -560,6 +562,10 @@ body {
   font-weight: 600;
 }
 
+.main-task-row td {
+  text-align: center;
+}
+
 .main-task-row:hover {
   background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%) !important;
 }
@@ -575,6 +581,10 @@ body {
   border-left: 4px solid #e5e7eb;
 }
 
+.sub-task-row td {
+  text-align: center;
+}
+
 .sub-task-row:hover {
   background: #f9fafb !important;
   border-left-color: #d1d5db;
@@ -585,6 +595,19 @@ body {
   background: #f9fafb;
   font-weight: 600;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.value-basis-row td {
+  text-align: center;
+}
+
+.value-basis-row strong {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'Arimo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #101828;
 }
 
 /* Base Rates Badge */
@@ -602,6 +625,7 @@ body {
   font-weight: 700;
   color: #1e40af;
   line-height: 16px;
+  white-space: nowrap;
 }
 
 /* Action Buttons */
@@ -646,6 +670,16 @@ body {
 .remove-icon {
   width: 14px;
   height: 14px;
+}
+
+/* Row number styling */
+.row-number-cell {
+  text-align: center;
+}
+
+.row-number {
+  display: inline-block;
+  font-weight: 600;
 }
 
 /* Grand Total */

@@ -99,6 +99,7 @@ const PrintPreviewModal = memo(({
       
       // Aggregate sub-task totals
       const subTasks = tasks.filter(t => t.parentId === task.id);
+      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
       let aggregatedHours = mainTotalHours;
       let aggregatedOvertime = task.overtimeHours;
       let aggregatedSoftware = (task.softwareUnits || 0);
@@ -110,7 +111,7 @@ const PrintPreviewModal = memo(({
         aggregatedSoftware += (subTask.softwareUnits || 0);
       });
       
-      const basicLabor = aggregatedHours * baseRates.timeChargeRate;
+      const basicLabor = aggregatedHours * taskTimeChargeRate;
       const overtime = aggregatedOvertime * baseRates.overtimeRate;
       const software = aggregatedSoftware * baseRates.softwareRate;
       return basicLabor + overtime + software;
@@ -123,6 +124,7 @@ const PrintPreviewModal = memo(({
       
       // Aggregate sub-task totals
       const subTasks = tasks.filter(t => t.parentId === task.id);
+      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
       let aggregatedHours = mainTotalHours;
       let aggregatedOvertime = task.overtimeHours;
       let aggregatedSoftware = (task.softwareUnits || 0);
@@ -134,7 +136,7 @@ const PrintPreviewModal = memo(({
         aggregatedSoftware += (subTask.softwareUnits || 0);
       });
       
-      const basicLabor = aggregatedHours * baseRates.timeChargeRate;
+      const basicLabor = aggregatedHours * taskTimeChargeRate;
       const overtime = aggregatedOvertime * baseRates.overtimeRate;
       const software = aggregatedSoftware * baseRates.softwareRate;
       return basicLabor + overtime + software;

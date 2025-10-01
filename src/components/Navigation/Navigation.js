@@ -22,7 +22,6 @@ const Navigation = memo(({
         </div>
         <div className="brand-text">
           <h1>KMTI Quotation & Billing</h1>
-          <span className="brand-subtitle">Professional quotation management system</span>
           {currentFilePath && (
             <span className="file-status">
               {currentFilePath} {hasUnsavedChanges && "• Edited"}
