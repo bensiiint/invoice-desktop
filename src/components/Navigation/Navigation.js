@@ -17,9 +17,12 @@ const Navigation = memo(({
   return (
     <nav className="top-nav">
       <div className="nav-brand">
-        <img src="./icon.png" alt="KMTI Logo" className="brand-icon" />
+        <div className="brand-icon-container">
+          <img src="./icon.png" alt="KMTI Logo" className="brand-icon" />
+        </div>
         <div className="brand-text">
-          <h1>KMTI Quotation & Billing Statement App</h1>
+          <h1>KMTI Quotation & Billing</h1>
+          <span className="brand-subtitle">Professional quotation management system</span>
           {currentFilePath && (
             <span className="file-status">
               {currentFilePath} {hasUnsavedChanges && "• Edited"}
@@ -33,7 +36,7 @@ const Navigation = memo(({
           <FileText className="action-icon" />
           <span>New</span>
         </button>
-        <button className="action-button primary" onClick={onSave}>
+        <button className="action-button secondary" onClick={onSave}>
           <Save className="action-icon" />
           <span>Save</span>
         </button>

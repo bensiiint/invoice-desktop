@@ -1,5 +1,5 @@
-import React, { memo, useMemo, useCallback } from 'react';
-import { DollarSign, Plus, Trash2 } from 'lucide-react';
+import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
+import { Calculator, Plus, Trash2, Edit3 } from 'lucide-react';
 
 // Memoized sub-components for better performance
 const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
@@ -9,89 +9,91 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
 
   return (
     <tr className="value-basis-row">
-      <td className="row-number-cell">-</td>
-      <td className="basis-value-cell">-</td>
-      <td className="description-cell">
-        -
-      </td>
-      <td className="basis-value-cell">-</td>
-      <td className="basis-value-cell">-</td>
-      <td className="basis-rate-cell time-charge-rates">
-        <div className="rate-input-group">
-          <div className="rate-row">
-            <label className="rate-label">2D:</label>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '10px', fontWeight: '600', minWidth: '20px' }}>2D:</label>
             <input
               type="number"
               value={baseRates.timeChargeRate2D}
               onChange={(e) => handleUpdate('timeChargeRate2D', e.target.value)}
-              className="table-input number-input rate-input rate-2d"
+              className="table-input"
+              style={{ width: '50px', fontSize: '11px', padding: '2px 4px' }}
               min="0"
             />
           </div>
-          <div className="rate-row">
-            <label className="rate-label">3D:</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '10px', fontWeight: '600', minWidth: '20px' }}>3D:</label>
             <input
               type="number"
               value={baseRates.timeChargeRate3D}
               onChange={(e) => handleUpdate('timeChargeRate3D', e.target.value)}
-              className="table-input number-input rate-input rate-3d"
+              className="table-input"
+              style={{ width: '50px', fontSize: '11px', padding: '2px 4px' }}
               min="0"
             />
           </div>
         </div>
       </td>
-      <td className="basis-rate-cell">
+      <td>
         <input
           type="number"
           value={baseRates.otHoursMultiplier}
           onChange={(e) => handleUpdate('otHoursMultiplier', e.target.value)}
-          className="table-input number-input rate-input"
+          className="table-input"
+          style={{ width: '60px', fontSize: '11px', padding: '2px 4px' }}
           min="0"
           step="0.1"
         />
       </td>
-      <td className="basis-rate-cell">
+      <td>
         <input
           type="number"
           value={baseRates.overtimeRate}
           onChange={(e) => handleUpdate('overtimeRate', e.target.value)}
-          className="table-input number-input rate-input"
+          className="table-input"
+          style={{ width: '70px', fontSize: '11px', padding: '2px 4px' }}
           min="0"
         />
       </td>
-      <td className="basis-rate-cell">
+      <td>
         <input
           type="number"
           value={baseRates.softwareRate}
           onChange={(e) => handleUpdate('softwareRate', e.target.value)}
-          className="table-input number-input rate-input"
+          className="table-input"
+          style={{ width: '80px', fontSize: '11px', padding: '2px 4px' }}
           min="0"
         />
       </td>
-      <td className="basis-rate-cell">
-        <div className="overhead-input-container">
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
           <input
             type="number"
             value={baseRates.overheadPercentage}
             onChange={(e) => handleUpdate('overheadPercentage', e.target.value)}
-            className="table-input number-input rate-input overhead-percentage-input"
+            className="table-input"
+            style={{ width: '50px', fontSize: '11px', padding: '2px 4px' }}
             min="0"
             max="100"
             step="1"
           />
-          <span className="percentage-symbol">%</span>
+          <span style={{ fontSize: '12px', fontWeight: '600' }}>%</span>
         </div>
       </td>
-      <td className="basis-value-cell">-</td>
-      <td className="total-cell basis-total">
-        <strong>Base Rates</strong>
-      </td>
-      <td></td>
+      <td>-</td>
+      <td><strong>Base Rates</strong></td>
+      <td>-</td>
     </tr>
   );
 });
 
-const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect, rowNumber }) => {
+const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect, rowNumber, isEditing, onEditToggle, onEditValueUpdate }) => {
   const handleUpdate = useCallback((field, value) => {
     onUpdate(task.id, field, value);
   }, [task.id, onUpdate]);
@@ -99,6 +101,20 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
   const handleRemove = useCallback(() => {
     onRemove(task.id);
   }, [task.id, onRemove]);
+
+  const handleEditToggle = useCallback(() => {
+    onEditToggle(task.id);
+  }, [task.id, onEditToggle]);
+
+  const handleEditValueChange = useCallback((field, value) => {
+    onEditValueUpdate(task.id, field, parseFloat(value) || 0, true); // Add flag to indicate user interaction
+  }, [task.id, onEditValueUpdate]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      handleEditToggle();
+    }
+  }, [handleEditToggle]);
   
   const handleMainTaskClick = useCallback(() => {
     if (task.isMainTask && onMainTaskSelect) {
@@ -135,7 +151,7 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
             value={task.description}
             onChange={(e) => handleUpdate('description', e.target.value)}
             className={`table-input description-input ${!task.isMainTask ? 'sub-task-input' : ''}`}
-            placeholder={task.isMainTask ? "Main task description" : "Part's name"}
+            placeholder={task.isMainTask ? "Assembly Name" : "Part's name"}
           />
         </div>
       </td>
@@ -161,7 +177,19 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
         />
       </td>
       <td className="calculated-cell time-charge-bg">
-        {formatCurrency(subtotals.basicLabor)}
+        {isEditing ? (
+          <input
+            type="number"
+            value={subtotals.basicLabor}
+            onChange={(e) => handleEditValueChange('basicLabor', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="table-input number-input edit-calculated-input"
+            min="0"
+            step="0.01"
+          />
+        ) : (
+          formatCurrency(subtotals.basicLabor)
+        )}
       </td>
       <td>
         <input
@@ -174,7 +202,19 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
         />
       </td>
       <td className="calculated-cell overtime-bg">
-        {formatCurrency(subtotals.overtime)}
+        {isEditing ? (
+          <input
+            type="number"
+            value={subtotals.overtime}
+            onChange={(e) => handleEditValueChange('overtime', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="table-input number-input edit-calculated-input"
+            min="0"
+            step="0.01"
+          />
+        ) : (
+          formatCurrency(subtotals.overtime)
+        )}
       </td>
       <td className="software-cell">
         <div className="software-input-container">
@@ -185,13 +225,37 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
             className="table-input number-input software-units-input"
             min="0"
           />
-          <span className="software-total">
-            {formatCurrency(subtotals.software)}
-          </span>
+          {isEditing ? (
+            <input
+              type="number"
+              value={subtotals.software}
+              onChange={(e) => handleEditValueChange('software', e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="table-input number-input edit-calculated-input software-edit-input"
+              min="0"
+              step="0.01"
+            />
+          ) : (
+            <span className="software-total">
+              {formatCurrency(subtotals.software)}
+            </span>
+          )}
         </div>
       </td>
       <td className="calculated-cell overhead-bg">
-        {formatCurrency(subtotals.overhead)}
+        {isEditing ? (
+          <input
+            type="number"
+            value={subtotals.overhead}
+            onChange={(e) => handleEditValueChange('overhead', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="table-input number-input edit-calculated-input"
+            min="0"
+            step="0.01"
+          />
+        ) : (
+          formatCurrency(subtotals.overhead)
+        )}
       </td>
       <td className="type-cell">
         {(task.type === '2D' || task.type === '3D' || task.type === undefined || task.type === null) ? (
@@ -233,15 +297,38 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
           </div>
         )}
       </td>
-      <td className="total-cell">{formatCurrency(subtotals.total)}</td>
+      <td className="total-cell">
+        {isEditing ? (
+          <input
+            type="number"
+            value={subtotals.total}
+            onChange={(e) => handleEditValueChange('total', e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="table-input number-input edit-calculated-input"
+            min="0"
+            step="0.01"
+          />
+        ) : (
+          formatCurrency(subtotals.total)
+        )}
+      </td>
       <td className="action-cell">
-        <button
-          onClick={handleRemove}
-          className="remove-task-button"
-          title="Remove task"
-        >
-          <Trash2 className="remove-icon" />
-        </button>
+        <div className="action-buttons-container">
+          <button
+            onClick={handleEditToggle}
+            className={`edit-task-button ${isEditing ? 'editing' : ''}`}
+            title={isEditing ? "Save changes" : "Edit values"}
+          >
+            <Edit3 className="edit-icon" />
+          </button>
+          <button
+            onClick={handleRemove}
+            className="remove-task-button"
+            title="Remove task"
+          >
+            <Trash2 className="remove-icon" />
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -259,6 +346,13 @@ const TasksTable = memo(({
   onMainTaskSelect,
   onBaseRateUpdate,
 }) => {
+  // State for edit mode management
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedValues, setEditedValues] = useState({});
+  // Track which fields were actually modified by user during editing
+  const [modifiedFields, setModifiedFields] = useState({});
+  // State for manual overrides that persist after editing
+  const [manualOverrides, setManualOverrides] = useState({});
   // Memoize calculations to prevent recalculation on every render
   const { taskTotals, grandTotal, mainTaskCount } = useMemo(() => {
     const mainTasks = tasks.filter(task => task.isMainTask);
@@ -292,15 +386,48 @@ const TasksTable = memo(({
       const subtotal = aggregatedBasicLabor + aggregatedOvertime + aggregatedSoftware;
       const overhead = subtotal * (baseRates.overheadPercentage / 100);
       
+      // Calculate base values
+      let finalBasicLabor = task.isMainTask ? aggregatedBasicLabor : basicLabor;
+      let finalOvertime = task.isMainTask ? aggregatedOvertime : overtime;
+      let finalSoftware = task.isMainTask ? aggregatedSoftware : software;
+      let finalOverhead = task.isMainTask ? overhead : (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100);
+      let finalTotal = task.isMainTask ? 
+        (aggregatedBasicLabor + aggregatedOvertime + aggregatedSoftware + overhead) :
+        (basicLabor + overtime + software + (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100));
+      
+      // Apply manual overrides if they exist
+      const override = manualOverrides[task.id];
+      if (override) {
+        // Apply individual field overrides
+        finalBasicLabor = override.basicLabor !== undefined ? override.basicLabor : finalBasicLabor;
+        finalOvertime = override.overtime !== undefined ? override.overtime : finalOvertime;
+        finalSoftware = override.software !== undefined ? override.software : finalSoftware;
+        
+        // If overhead was manually set, use it; otherwise recalculate if other fields changed
+        if (override.overhead !== undefined) {
+          finalOverhead = override.overhead;
+        } else if (override.basicLabor !== undefined || override.overtime !== undefined || override.software !== undefined) {
+          // Recalculate overhead based on new subtotal
+          const newSubtotal = finalBasicLabor + finalOvertime + finalSoftware;
+          finalOverhead = newSubtotal * (baseRates.overheadPercentage / 100);
+        }
+        
+        // If total was manually set, use it; otherwise recalculate
+        if (override.total !== undefined) {
+          finalTotal = override.total;
+        } else {
+          // Recalculate total from all components
+          finalTotal = finalBasicLabor + finalOvertime + finalSoftware + finalOverhead;
+        }
+      }
+      
       return {
         taskId: task.id,
-        basicLabor: task.isMainTask ? aggregatedBasicLabor : basicLabor,
-        overtime: task.isMainTask ? aggregatedOvertime : overtime,
-        software: task.isMainTask ? aggregatedSoftware : software,
-        overhead: task.isMainTask ? overhead : (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100),
-        total: task.isMainTask ? 
-          (aggregatedBasicLabor + aggregatedOvertime + aggregatedSoftware + overhead) :
-          (basicLabor + overtime + software + (basicLabor + overtime + software) * (baseRates.overheadPercentage / 100)),
+        basicLabor: finalBasicLabor,
+        overtime: finalOvertime,
+        software: finalSoftware,
+        overhead: finalOverhead,
+        total: finalTotal,
       };
     });
 
@@ -310,138 +437,224 @@ const TasksTable = memo(({
       .reduce((sum, task) => sum + task.total, 0);
     
     return { taskTotals: totals, grandTotal: grand, mainTaskCount };
-  }, [tasks, baseRates]);
+  }, [tasks, baseRates, manualOverrides]);
+
+  // Edit mode handlers
+  const handleEditToggle = useCallback((taskId) => {
+    if (editingTaskId === taskId) {
+      // Save changes when exiting edit mode - only save fields that were actually modified by user
+      const fieldsToSave = modifiedFields[taskId];
+      if (fieldsToSave && Object.keys(fieldsToSave).length > 0) {
+        const valuesToSave = {};
+        Object.keys(fieldsToSave).forEach(field => {
+          valuesToSave[field] = editedValues[taskId][field];
+        });
+        
+        setManualOverrides(prev => ({
+          ...prev,
+          [taskId]: {
+            ...prev[taskId],
+            ...valuesToSave
+          }
+        }));
+      }
+      
+      setEditingTaskId(null);
+      setEditedValues({});
+      setModifiedFields({});
+    } else {
+      // Enter edit mode and initialize with current values
+      setEditingTaskId(taskId);
+      const taskSubtotals = taskTotals.find(t => t.taskId === taskId);
+      if (taskSubtotals) {
+        setEditedValues({
+          [taskId]: {
+            basicLabor: taskSubtotals.basicLabor,
+            overtime: taskSubtotals.overtime,
+            software: taskSubtotals.software,
+            overhead: taskSubtotals.overhead,
+            total: taskSubtotals.total,
+          }
+        });
+      }
+    }
+  }, [editingTaskId, taskTotals, editedValues, modifiedFields]);
+
+  const handleEditValueUpdate = useCallback((taskId, field, value, userModified = false) => {
+    setEditedValues(prev => ({
+      ...prev,
+      [taskId]: {
+        ...prev[taskId],
+        [field]: value
+      }
+    }));
+    
+    // Track which fields were actually modified by user interaction
+    if (userModified) {
+      setModifiedFields(prev => ({
+        ...prev,
+        [taskId]: {
+          ...prev[taskId],
+          [field]: true
+        }
+      }));
+    }
+  }, []);
 
   // Memoize formatCurrency function
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;
   }, []);
 
-  // Memoize subtotals lookup
   const getTaskSubtotals = useCallback(
     (taskId) => {
-      return (
-        taskTotals.find((t) => t.taskId === taskId) || {
-          basicLabor: 0,
-          overtime: 0,
-          software: 0,
-          overhead: 0,
-          total: 0,
-        }
-      );
+      const calculatedTotals = taskTotals.find((t) => t.taskId === taskId) || {
+        basicLabor: 0,
+        overtime: 0,
+        software: 0,
+        overhead: 0,
+        total: 0,
+      };
+      
+      // Return edited values if task is being edited, otherwise return calculated values (which already include manual overrides)
+      if (editingTaskId === taskId && editedValues[taskId]) {
+        return {
+          ...calculatedTotals,
+          ...editedValues[taskId]
+        };
+      }
+      
+      return calculatedTotals;
     },
-    [taskTotals]
+    [taskTotals, editingTaskId, editedValues]
   );
 
+  // Clean up manual overrides and modified fields when tasks are removed
+  const taskIds = useMemo(() => new Set(tasks.map(task => task.id)), [tasks]);
+  
+  useEffect(() => {
+    setManualOverrides(prev => {
+      const filtered = {};
+      Object.keys(prev).forEach(taskId => {
+        if (taskIds.has(taskId)) {
+          filtered[taskId] = prev[taskId];
+        }
+      });
+      return filtered;
+    });
+    
+    setModifiedFields(prev => {
+      const filtered = {};
+      Object.keys(prev).forEach(taskId => {
+        if (taskIds.has(taskId)) {
+          filtered[taskId] = prev[taskId];
+        }
+      });
+      return filtered;
+    });
+  }, [taskIds]);
+
   return (
-    <div className="section-card tasks-card">
-      <div className="card-header">
-        <DollarSign className="card-icon tasks" />
-        <h2>Computation Table</h2>
-        <div className="task-buttons">
+    <div className="computation-section">
+      <div className="computation-header">
+        <div className="section-header" style={{ height: '32px' }}>
+          <div className="section-icon computation">
+            <Calculator size={20} color="#f59e0b" />
+          </div>
+          <h2 className="section-title">Computation Table</h2>
+        </div>
+        
+        <div className="computation-buttons">
           <button 
-            className="add-button" 
+            className="add-button primary" 
             onClick={onTaskAdd}
             disabled={mainTaskCount >= 27}
             title={mainTaskCount >= 27 ? "Maximum 27 assembly tasks reached" : "Add assembly task"}
           >
-            <Plus className="add-icon" />
-            Add Assembly ({mainTaskCount}/27)
+            <Plus className="add-icon" size={16} />
+            Add Assembly
           </button>
           <button 
-            className="add-button sub-task-button" 
+            className="add-button secondary" 
             onClick={() => onSubTaskAdd(selectedMainTaskId)}
             disabled={!selectedMainTaskId}
             title={!selectedMainTaskId ? "Select a main task first" : "Add sub-task"}
           >
-            <Plus className="add-icon" />
+            <Plus className="add-icon" size={16} />
             Add Parts
           </button>
         </div>
       </div>
 
-      <div className="card-content">
-        <div className="tasks-table-container">
-          {/* Fixed Header */}
-          <div className="tasks-table-header-fixed">
-            <table className="tasks-table">
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Ref No</th>
-                  <th>Description</th>
-                  <th>Hours</th>
-                  <th>Minutes</th>
-                  <th>Time Charge</th>
-                  <th>OT Hrs</th>
-                  <th>Overtime</th>
-                  <th>Software</th>
-                  <th>OH</th>
-                  <th>Type</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-            </table>
-          </div>
-
-          {/* Fixed Value Basis Row */}
-          <div className="tasks-table-value-basis-fixed">
-            <table className="tasks-table">
-              <tbody>
-                <ValueBasisRow baseRates={baseRates} onUpdate={onBaseRateUpdate} />
-              </tbody>
-            </table>
-          </div>
-
-          {/* Scrollable Task Rows Container */}
-          <div className="tasks-table-body-scrollable">
-            <table className="tasks-table">
-              <tbody>
-                {tasks.map((task, index) => {
-                  // Calculate hierarchical row numbers
-                  let rowNumber;
-                  if (task.isMainTask) {
-                    // Count previous main tasks to get assembly number
-                    const mainTasksBefore = tasks.slice(0, index).filter(t => t.isMainTask).length;
-                    rowNumber = mainTasksBefore + 1;
-                  } else {
-                    // For sub-tasks, count previous sub-tasks under the same parent
-                    const subTasksBefore = tasks.slice(0, index).filter(t => t.parentId === task.parentId).length;
-                    rowNumber = subTasksBefore + 1;
-                  }
-                  
-                  return (
-                    <TaskRow
-                      key={task.id}
-                      task={task}
-                      subtotals={getTaskSubtotals(task.id)}
-                      onUpdate={onTaskUpdate}
-                      onRemove={onTaskRemove}
-                      formatCurrency={formatCurrency}
-                      isSelected={task.isMainTask && task.id === selectedMainTaskId}
-                      onMainTaskSelect={onMainTaskSelect}
-                      rowNumber={rowNumber}
-                    />
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Fixed Grand Total Row */}
-          <div className="tasks-table-footer-fixed">
-            <table className="tasks-table">
-              <tfoot>
-                <tr className="grand-total-row">
-                  <td colSpan="13" className="grand-total-combined-cell">
-                    <strong>Grand Total:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{formatCurrency(grandTotal)}</strong>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+      <div className="tasks-table-container">
+        {/* Table Header */}
+        <div className="tasks-table-header">
+          <table className="tasks-table">
+            <thead>
+              <tr>
+                <th>NO.</th>
+                <th>KIT NO</th>
+                <th>DESCRIPTION</th>
+                <th>HOURS</th>
+                <th>MINUTES</th>
+                <th>TIME CHARGE</th>
+                <th>OT RATE</th>
+                <th>OVERTIME</th>
+                <th>SOFTWARE</th>
+                <th>OH</th>
+                <th>TYPE</th>
+                <th>TOTAL</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+          </table>
         </div>
+
+        {/* Table Body */}
+        <div className="tasks-table-body">
+          <table className="tasks-table">
+            <tbody>
+              <ValueBasisRow baseRates={baseRates} onUpdate={onBaseRateUpdate} />
+              
+              {tasks.map((task, index) => {
+                // Calculate hierarchical row numbers
+                let rowNumber;
+                if (task.isMainTask) {
+                  // Count previous main tasks to get assembly number
+                  const mainTasksBefore = tasks.slice(0, index).filter(t => t.isMainTask).length;
+                  rowNumber = mainTasksBefore + 1;
+                } else {
+                  // For sub-tasks, count previous sub-tasks under the same parent
+                  const subTasksBefore = tasks.slice(0, index).filter(t => t.parentId === task.parentId).length;
+                  rowNumber = subTasksBefore + 1;
+                }
+                
+                return (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    subtotals={getTaskSubtotals(task.id)}
+                    onUpdate={onTaskUpdate}
+                    onRemove={onTaskRemove}
+                    formatCurrency={formatCurrency}
+                    isSelected={task.isMainTask && task.id === selectedMainTaskId}
+                    onMainTaskSelect={onMainTaskSelect}
+                    rowNumber={rowNumber}
+                    isEditing={editingTaskId === task.id}
+                    onEditToggle={handleEditToggle}
+                    onEditValueUpdate={handleEditValueUpdate}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Grand Total Section */}
+      <div className="grand-total-section">
+        <div className="grand-total-label">Grand Total:</div>
+        <div className="grand-total-value">¥{grandTotal.toLocaleString()}</div>
       </div>
     </div>
   );
