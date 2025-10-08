@@ -226,6 +226,45 @@ export function useInvoiceState() {
     setHasUnsavedChanges(true);
   }, []);
 
+  const reorderTasks = useCallback((draggedTaskId, targetTaskId) => {
+    setTasks(prev => {
+      const newTasks = [...prev];
+      const draggedIndex = newTasks.findIndex(task => task.id === draggedTaskId);
+      const targetIndex = newTasks.findIndex(task => task.id === targetTaskId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+      
+      // Only allow reordering of main tasks
+      const draggedTask = newTasks[draggedIndex];
+      const targetTask = newTasks[targetIndex];
+      
+      if (!draggedTask.isMainTask || !targetTask.isMainTask) return prev;
+      
+      // Remove the dragged task and its sub-tasks
+      const draggedTaskAndSubs = newTasks.filter(task => 
+        task.id === draggedTaskId || task.parentId === draggedTaskId
+      );
+      
+      // Remove them from the array
+      const tasksWithoutDragged = newTasks.filter(task => 
+        task.id !== draggedTaskId && task.parentId !== draggedTaskId
+      );
+      
+      // Find the new target index in the filtered array
+      const newTargetIndex = tasksWithoutDragged.findIndex(task => task.id === targetTaskId);
+      
+      // Insert the dragged task and its sub-tasks at the new position
+      const result = [
+        ...tasksWithoutDragged.slice(0, newTargetIndex),
+        ...draggedTaskAndSubs,
+        ...tasksWithoutDragged.slice(newTargetIndex)
+      ];
+      
+      return result;
+    });
+    setHasUnsavedChanges(true);
+  }, []);
+
   const updateBaseRate = useCallback((field, value) => {
     setBaseRates(prev => {
       const newRates = { ...prev, [field]: value };
@@ -463,6 +502,7 @@ export function useInvoiceState() {
     addSubTask,
     removeTask,
     updateTask,
+    reorderTasks,
     updateBaseRate,
     updateSignatures,
     setSelectedMainTaskId,

@@ -38,6 +38,7 @@ function App() {
     addSubTask,
     removeTask,
     updateTask,
+    reorderTasks,
     updateBaseRate,
     updateSignatures,
     setSelectedMainTaskId,
@@ -115,6 +116,7 @@ function App() {
               onTaskAdd={addTask}
               onSubTaskAdd={addSubTask}
               onTaskRemove={removeTask}
+              onTaskReorder={reorderTasks}
               onMainTaskSelect={setSelectedMainTaskId}
               onBaseRateUpdate={updateBaseRate}
               onManualOverridesChange={handleManualOverridesChange}

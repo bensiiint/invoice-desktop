@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Calculator, Plus, Trash2, Edit3 } from 'lucide-react';
+import './TasksTable.css';
 
 // Memoized sub-components for better performance
 const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
@@ -93,7 +94,7 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
   );
 });
 
-const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect, rowNumber, isEditing, onEditToggle, onEditValueUpdate }) => {
+const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isSelected, onMainTaskSelect, rowNumber, isEditing, onEditToggle, onEditValueUpdate, isDragging, isDragOver, onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd }) => {
   const handleUpdate = useCallback((field, value) => {
     onUpdate(task.id, field, value);
   }, [task.id, onUpdate]);
@@ -127,9 +128,17 @@ const TaskRow = memo(({ task, subtotals, onUpdate, onRemove, formatCurrency, isS
       className={`
         ${task.isMainTask ? 'main-task-row' : 'sub-task-row'}
         ${isSelected ? 'selected-main-task' : ''}
+        ${isDragging ? 'dragging' : ''}
+        ${isDragOver ? 'drag-over' : ''}
       `}
       onClick={handleMainTaskClick}
       style={{ cursor: task.isMainTask ? 'pointer' : 'default' }}
+      draggable={task.isMainTask}
+      onDragStart={(e) => onDragStart && onDragStart(e, task.id)}
+      onDragOver={(e) => onDragOver && onDragOver(e, task.id)}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop && onDrop(e, task.id)}
+      onDragEnd={onDragEnd}
     >
       <td className="row-number-cell">
         <span className="row-number">{rowNumber}</span>
@@ -343,6 +352,7 @@ const TasksTable = memo(({
   onTaskAdd,
   onSubTaskAdd,
   onTaskRemove,
+  onTaskReorder,
   onMainTaskSelect,
   onBaseRateUpdate,
   onManualOverridesChange,
@@ -354,6 +364,10 @@ const TasksTable = memo(({
   const [modifiedFields, setModifiedFields] = useState({});
   // State for manual overrides that persist after editing
   const [manualOverrides, setManualOverrides] = useState({});
+  
+  // Drag and drop state
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverTaskId, setDragOverTaskId] = useState(null);
   // Memoize calculations to prevent recalculation on every render
   const { taskTotals, grandTotal, mainTaskCount } = useMemo(() => {
     const mainTasks = tasks.filter(task => task.isMainTask);
@@ -571,6 +585,55 @@ const TasksTable = memo(({
     }
   }, [manualOverrides, onManualOverridesChange]);
 
+  // Drag and drop handlers
+  const handleDragStart = useCallback((e, taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.isMainTask) return;
+    
+    setDraggedTaskId(taskId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', taskId);
+    
+    // Add drag cursor
+    e.target.style.cursor = 'grabbing';
+  }, [tasks]);
+
+  const handleDragOver = useCallback((e, taskId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.isMainTask || taskId === draggedTaskId) return;
+    
+    setDragOverTaskId(taskId);
+  }, [tasks, draggedTaskId]);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverTaskId(null);
+  }, []);
+
+  const handleDrop = useCallback((e, targetTaskId) => {
+    e.preventDefault();
+    
+    if (!draggedTaskId || !targetTaskId || draggedTaskId === targetTaskId) {
+      setDraggedTaskId(null);
+      setDragOverTaskId(null);
+      return;
+    }
+    
+    if (onTaskReorder) {
+      onTaskReorder(draggedTaskId, targetTaskId);
+    }
+    
+    setDraggedTaskId(null);
+    setDragOverTaskId(null);
+  }, [draggedTaskId, onTaskReorder]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedTaskId(null);
+    setDragOverTaskId(null);
+  }, []);
+
   return (
     <div className="computation-section">
       <div className="computation-header">
@@ -660,6 +723,13 @@ const TasksTable = memo(({
                     isEditing={editingTaskId === task.id}
                     onEditToggle={handleEditToggle}
                     onEditValueUpdate={handleEditValueUpdate}
+                    isDragging={draggedTaskId === task.id}
+                    isDragOver={dragOverTaskId === task.id}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onDragEnd={handleDragEnd}
                   />
                 );
               })}

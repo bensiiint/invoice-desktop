@@ -1,0 +1,26 @@
+/* Drag and Drop Styles */
+.main-task-row.dragging {
+  opacity: 0.6;
+  cursor: grabbing !important;
+}
+
+.main-task-row.drag-over {
+  border-top: 2px solid #2196f3;
+}
+
+.main-task-row[draggable="true"] {
+  cursor: grab;
+}
+
+.main-task-row[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Ensure sub-tasks are not draggable */
+.sub-task-row {
+  cursor: default !important;
+}
+
+.sub-task-row[draggable="true"] {
+  cursor: default !important;
+}
