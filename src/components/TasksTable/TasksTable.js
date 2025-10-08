@@ -345,6 +345,7 @@ const TasksTable = memo(({
   onTaskRemove,
   onMainTaskSelect,
   onBaseRateUpdate,
+  onManualOverridesChange,
 }) => {
   // State for edit mode management
   const [editingTaskId, setEditingTaskId] = useState(null);
@@ -498,6 +499,15 @@ const TasksTable = memo(({
           [field]: true
         }
       }));
+
+      // Save the override immediately when user modifies a value
+      setManualOverrides(prev => ({
+        ...prev,
+        [taskId]: {
+          ...prev[taskId],
+          [field]: parseFloat(value) || 0
+        }
+      }));
     }
   }, []);
 
@@ -553,6 +563,13 @@ const TasksTable = memo(({
       return filtered;
     });
   }, [taskIds]);
+
+  // Notify parent component when manual overrides change
+  useEffect(() => {
+    if (onManualOverridesChange) {
+      onManualOverridesChange(manualOverrides);
+    }
+  }, [manualOverrides, onManualOverridesChange]);
 
   return (
     <div className="computation-section">

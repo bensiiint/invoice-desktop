@@ -17,11 +17,13 @@ const PrintPreviewModal = memo(({
   quotationDetails,
   tasks,
   baseRates,
-  signatures 
+  signatures,
+  manualOverrides = {}
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [printMode, setPrintMode] = useState('quotation'); // 'quotation' or 'billing'
   const previewRef = useRef(null);
+
 
   // Fixed settings for A4 paper
   const settings = {
@@ -51,6 +53,46 @@ const PrintPreviewModal = memo(({
   const previewScale = useMemo(() => {
     return 1.0;
   }, []);
+
+  // Helper function to calculate task totals with manual overrides
+  const calculateTaskTotal = useCallback((task) => {
+    // Calculate main task hours and minutes
+    const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+    
+    // Aggregate sub-task totals
+    const subTasks = tasks.filter(t => t.parentId === task.id);
+    const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+    let aggregatedHours = mainTotalHours;
+    let aggregatedOvertime = task.overtimeHours;
+    let aggregatedSoftware = (task.softwareUnits || 0);
+    
+    subTasks.forEach(subTask => {
+      const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
+      aggregatedHours += subTotalHours;
+      aggregatedOvertime += subTask.overtimeHours;
+      aggregatedSoftware += (subTask.softwareUnits || 0);
+    });
+    
+    // Calculate base values
+    let basicLabor = aggregatedHours * taskTimeChargeRate;
+    let overtime = aggregatedOvertime * baseRates.overtimeRate;
+    let software = aggregatedSoftware * baseRates.softwareRate;
+    
+    // Apply manual overrides if they exist
+    const override = manualOverrides[task.id];
+    if (override) {
+      basicLabor = override.basicLabor !== undefined ? override.basicLabor : basicLabor;
+      overtime = override.overtime !== undefined ? override.overtime : overtime;
+      software = override.software !== undefined ? override.software : software;
+      
+      // If total is overridden, use that directly
+      if (override.total !== undefined) {
+        return override.total;
+      }
+    }
+    
+    return basicLabor + overtime + software;
+  }, [tasks, baseRates, manualOverrides]);
 
   // Memoize pagination logic and calculations
   const { 
@@ -92,55 +134,11 @@ const PrintPreviewModal = memo(({
       }
     })();
     
-    // Calculate first page totals
-    const firstPageTotals = firstPageTasks.map((task) => {
-      // Calculate main task hours and minutes
-      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      
-      // Aggregate sub-task totals
-      const subTasks = tasks.filter(t => t.parentId === task.id);
-      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
-      let aggregatedHours = mainTotalHours;
-      let aggregatedOvertime = task.overtimeHours;
-      let aggregatedSoftware = (task.softwareUnits || 0);
-      
-      subTasks.forEach(subTask => {
-        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-        aggregatedHours += subTotalHours;
-        aggregatedOvertime += subTask.overtimeHours;
-        aggregatedSoftware += (subTask.softwareUnits || 0);
-      });
-      
-      const basicLabor = aggregatedHours * taskTimeChargeRate;
-      const overtime = aggregatedOvertime * baseRates.overtimeRate;
-      const software = aggregatedSoftware * baseRates.softwareRate;
-      return basicLabor + overtime + software;
-    });
+    // Calculate first page totals using helper function
+    const firstPageTotals = firstPageTasks.map(calculateTaskTotal);
 
-    // Calculate second page totals (if needed)
-    const secondPageTotals = needsPagination ? secondPageTasks.map((task) => {
-      // Calculate main task hours and minutes
-      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      
-      // Aggregate sub-task totals
-      const subTasks = tasks.filter(t => t.parentId === task.id);
-      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
-      let aggregatedHours = mainTotalHours;
-      let aggregatedOvertime = task.overtimeHours;
-      let aggregatedSoftware = (task.softwareUnits || 0);
-      
-      subTasks.forEach(subTask => {
-        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-        aggregatedHours += subTotalHours;
-        aggregatedOvertime += subTask.overtimeHours;
-        aggregatedSoftware += (subTask.softwareUnits || 0);
-      });
-      
-      const basicLabor = aggregatedHours * taskTimeChargeRate;
-      const overtime = aggregatedOvertime * baseRates.overtimeRate;
-      const software = aggregatedSoftware * baseRates.softwareRate;
-      return basicLabor + overtime + software;
-    }) : [];
+    // Calculate second page totals using helper function
+    const secondPageTotals = needsPagination ? secondPageTasks.map(calculateTaskTotal) : [];
 
     const firstPageSubtotal = firstPageTotals.reduce((sum, total) => sum + total, 0);
     const secondPageSubtotal = secondPageTotals.reduce((sum, total) => sum + total, 0);
@@ -177,7 +175,7 @@ const PrintPreviewModal = memo(({
       totalPages,
       secondPageEmptyRows
     };
-  }, [tasks, baseRates]);
+  }, [tasks, baseRates, calculateTaskTotal]);
 
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;

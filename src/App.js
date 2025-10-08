@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Navigation,
   QuotationDetails,
@@ -15,6 +15,8 @@ import "./App.css";
 function App() {
   // Print preview modal state
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  // Manual overrides from TasksTable
+  const [manualOverrides, setManualOverrides] = useState({});
   // Use optimized state management
   const {
     // State
@@ -65,6 +67,11 @@ function App() {
     setIsPrintPreviewOpen(true);
   };
 
+  // Handle manual overrides change from TasksTable
+  const handleManualOverridesChange = useCallback((overrides) => {
+    setManualOverrides(overrides);
+  }, []);
+
   return (
     <div className="app">
       {/* Top Navigation */}
@@ -110,6 +117,7 @@ function App() {
               onTaskRemove={removeTask}
               onMainTaskSelect={setSelectedMainTaskId}
               onBaseRateUpdate={updateBaseRate}
+              onManualOverridesChange={handleManualOverridesChange}
             />
 
             {/* Signature Section */}
@@ -128,6 +136,7 @@ function App() {
           tasks={tasks}
           baseRates={baseRates}
           signatures={signatures}
+          manualOverrides={manualOverrides}
           isPreview={false}
         />
       </div>
@@ -142,6 +151,7 @@ function App() {
         tasks={tasks}
         baseRates={baseRates}
         signatures={signatures}
+        manualOverrides={manualOverrides}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import Logo from './KmtiLogo.png';
 import './VisualLayout.css';
 
@@ -9,9 +9,50 @@ quotationDetails,
 tasks,
 baseRates,
 signatures,
+manualOverrides = {},
 isPreview = false,
 printMode = 'quotation'
 }) => {
+  // Helper function to calculate task totals with manual overrides
+  const calculateTaskTotal = useCallback((task) => {
+    // Calculate main task hours and minutes
+    const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
+    
+    // Aggregate sub-task totals
+    const subTasks = tasks.filter(t => t.parentId === task.id);
+    const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+    let aggregatedHours = mainTotalHours;
+    let aggregatedOvertime = task.overtimeHours;
+    let aggregatedSoftware = (task.softwareUnits || 0);
+    
+    subTasks.forEach(subTask => {
+      const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
+      aggregatedHours += subTotalHours;
+      aggregatedOvertime += subTask.overtimeHours;
+      aggregatedSoftware += (subTask.softwareUnits || 0);
+    });
+    
+    // Calculate base values
+    let basicLabor = aggregatedHours * taskTimeChargeRate;
+    let overtime = aggregatedOvertime * baseRates.overtimeRate;
+    let software = aggregatedSoftware * baseRates.softwareRate;
+    
+    // Apply manual overrides if they exist
+    const override = manualOverrides[task.id];
+    if (override) {
+      basicLabor = override.basicLabor !== undefined ? override.basicLabor : basicLabor;
+      overtime = override.overtime !== undefined ? override.overtime : overtime;
+      software = override.software !== undefined ? override.software : software;
+      
+      // If total is overridden, use that directly
+      if (override.total !== undefined) {
+        return override.total;
+      }
+    }
+    
+    return basicLabor + overtime + software;
+  }, [tasks, baseRates, manualOverrides]);
+
   // Calculate actual task count including overhead + nothing follow row (only main tasks) - LIMIT ASSEMBLY ROWS TO 27
   const mainTasks = tasks.filter(task => task.isMainTask).slice(0, 27); // MAXIMUM 27 ASSEMBLY ROWS
   const actualTaskCount = mainTasks.length + (baseRates.overheadPercentage > 0 ? 1 : 0) + 1; // +1 for nothing follow
@@ -50,29 +91,7 @@ printMode = 'quotation'
 
   // Memoize calculations for first page
   const { taskTotals: firstPageTaskTotals, firstPageSubtotal } = useMemo(() => {
-    const totals = firstPageTasks.map((task) => {
-      // Calculate main task hours and minutes
-      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      
-      // Aggregate sub-task totals
-      const subTasks = tasks.filter(t => t.parentId === task.id);
-      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
-      let aggregatedHours = mainTotalHours;
-      let aggregatedOvertime = task.overtimeHours;
-      let aggregatedSoftware = (task.softwareUnits || 0);
-      
-      subTasks.forEach(subTask => {
-        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-        aggregatedHours += subTotalHours;
-        aggregatedOvertime += subTask.overtimeHours;
-        aggregatedSoftware += (subTask.softwareUnits || 0);
-      });
-      
-      const basicLabor = aggregatedHours * taskTimeChargeRate;
-      const overtime = aggregatedOvertime * baseRates.overtimeRate;
-      const software = aggregatedSoftware * baseRates.softwareRate;
-      return basicLabor + overtime + software; // Task subtotal without overhead
-    });
+    const totals = firstPageTasks.map(calculateTaskTotal);
 
     const subtotal = totals.reduce((sum, total) => sum + total, 0);
     
@@ -80,35 +99,13 @@ printMode = 'quotation'
       taskTotals: totals, 
       firstPageSubtotal: subtotal
     };
-  }, [firstPageTasks, tasks, baseRates]);
+  }, [firstPageTasks, calculateTaskTotal]);
 
   // Memoize calculations for second page (if needed)
   const { taskTotals: secondPageTaskTotals, secondPageSubtotal } = useMemo(() => {
     if (!needsPagination) return { taskTotals: [], secondPageSubtotal: 0 };
     
-    const totals = secondPageTasks.map((task) => {
-      // Calculate main task hours and minutes
-      const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
-      
-      // Aggregate sub-task totals
-      const subTasks = tasks.filter(t => t.parentId === task.id);
-      const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
-      let aggregatedHours = mainTotalHours;
-      let aggregatedOvertime = task.overtimeHours;
-      let aggregatedSoftware = (task.softwareUnits || 0);
-      
-      subTasks.forEach(subTask => {
-        const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-        aggregatedHours += subTotalHours;
-        aggregatedOvertime += subTask.overtimeHours;
-        aggregatedSoftware += (subTask.softwareUnits || 0);
-      });
-      
-      const basicLabor = aggregatedHours * taskTimeChargeRate;
-      const overtime = aggregatedOvertime * baseRates.overtimeRate;
-      const software = aggregatedSoftware * baseRates.softwareRate;
-      return basicLabor + overtime + software; // Task subtotal without overhead
-    });
+    const totals = secondPageTasks.map(calculateTaskTotal);
 
     const subtotal = totals.reduce((sum, total) => sum + total, 0);
     
@@ -116,7 +113,7 @@ printMode = 'quotation'
       taskTotals: totals, 
       secondPageSubtotal: subtotal
     };
-  }, [secondPageTasks, tasks, baseRates, needsPagination]);
+  }, [secondPageTasks, calculateTaskTotal, needsPagination]);
 
   // Calculate grand totals
   const { grandTotal, overheadTotal } = useMemo(() => {
