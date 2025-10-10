@@ -20,7 +20,14 @@ printMode = 'quotation'
     
     // Aggregate sub-task totals
     const subTasks = tasks.filter(t => t.parentId === task.id);
-    const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+    let taskTimeChargeRate;
+    if (task.type === '2D') {
+      taskTimeChargeRate = baseRates.timeChargeRate2D;
+    } else if (task.type === '3D' || !task.type) {
+      taskTimeChargeRate = baseRates.timeChargeRate3D;
+    } else {
+      taskTimeChargeRate = baseRates.timeChargeRateOthers || 0;
+    }
     let aggregatedHours = mainTotalHours;
     let aggregatedOvertime = task.overtimeHours;
     let aggregatedSoftware = (task.softwareUnits || 0);
@@ -262,6 +269,7 @@ printMode = 'quotation'
             <th className="col-no">NO.</th>
             <th className="col-reference">REFERENCE NO.</th>
             <th className="col-description">DESCRIPTION</th>
+            <th className="col-unitpage">UNIT PAGE</th>
             <th className="col-type">TYPE</th>
             <th className="col-price">PRICE</th>
           </tr>
@@ -270,11 +278,13 @@ printMode = 'quotation'
           {/* Task rows */}
           {firstPageTasks.map((task, index) => {
             const aggregatedHours = getAggregatedHours(task);
+            const unitPageCount = 1 + tasks.filter(t => t.parentId === task.id).length;
             return (
               <tr key={task.id}>
                 <td>{index + 1}</td>
                 <td>{task.referenceNumber || ''}</td>
                 <td className="description-cell">{task.description}</td>
+                <td>{unitPageCount}</td>
                 <td>{task.type || '3D'}</td>
                 <td className="price-cell">{formatCurrency(firstPageTaskTotals[index])}</td>
               </tr>
@@ -288,6 +298,7 @@ printMode = 'quotation'
               <td>Administrative overhead</td>
               <td className="description-cell"></td>
               <td></td>
+              <td></td>
               <td className="price-cell">{formatCurrency(overheadTotal)}</td>
             </tr>
           )}
@@ -300,12 +311,14 @@ printMode = 'quotation'
               <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
               <td></td>
               <td></td>
+              <td></td>
             </tr>
           )}
           
           {/* Empty rows to fill space when not paginating */}
           {!needsPagination && Array.from({ length: Math.max(0, maxRows - firstPageTasks.length - (baseRates.overheadPercentage > 0 ? 1 : 0) - 1) }, (_, i) => (
             <tr key={`empty-${i}`}>
+              <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
@@ -322,13 +335,14 @@ printMode = 'quotation'
               <td className="description-cell nothing-follow">--- CONTINUED ON NEXT PAGE ---</td>
               <td></td>
               <td></td>
+              <td></td>
             </tr>
           )}
           
           {/* Total row - only on first page when not paginating */}
           {!needsPagination && (
             <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
-              <td colSpan="4" style={{textAlign: 'center'}}>Total Amount</td>
+              <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
               <td className="price-cell">{formatCurrency(grandTotal)}</td>
             </tr>
           )}
@@ -475,6 +489,7 @@ printMode = 'quotation'
             <th className="col-no">NO.</th>
             <th className="col-reference">REFERENCE NO.</th>
             <th className="col-description">DESCRIPTION</th>
+            <th className="col-unitpage">UNIT PAGE</th>
             <th className="col-type">TYPE</th>
             <th className="col-price">PRICE</th>
           </tr>
@@ -483,12 +498,14 @@ printMode = 'quotation'
           {/* Second page task rows - continue numbering */}
           {secondPageTasks.map((task, index) => {
             const aggregatedHours = getAggregatedHours(task);
+            const unitPageCount = 1 + tasks.filter(t => t.parentId === task.id).length;
             const taskNumber = firstPageTasks.length + index + 1; // Continue numbering from first page
             return (
               <tr key={task.id}>
                 <td>{taskNumber}</td>
                 <td>{task.referenceNumber || ''}</td>
                 <td className="description-cell">{task.description}</td>
+                <td>{unitPageCount}</td>
                 <td>{task.type || '3D'}</td>
                 <td className="price-cell">{formatCurrency(secondPageTaskTotals[index])}</td>
               </tr>
@@ -502,6 +519,7 @@ printMode = 'quotation'
               <td>Administrative overhead</td>
               <td className="description-cell"></td>
               <td></td>
+              <td></td>
               <td className="price-cell">{formatCurrency(overheadTotal)}</td>
             </tr>
           )}
@@ -511,6 +529,7 @@ printMode = 'quotation'
             <td></td>
             <td></td>
             <td className="description-cell nothing-follow">--- NOTHING FOLLOW ---</td>
+            <td></td>
             <td></td>
             <td></td>
           </tr>
@@ -525,12 +544,13 @@ printMode = 'quotation'
               <td>&nbsp;</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
+              <td>&nbsp;</td>
             </tr>
           ))}
           
           {/* Total row */}
           <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
-            <td colSpan="4" style={{textAlign: 'center'}}>Total Amount</td>
+            <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
             <td className="price-cell">{formatCurrency(grandTotal)}</td>
           </tr>
         </tbody>

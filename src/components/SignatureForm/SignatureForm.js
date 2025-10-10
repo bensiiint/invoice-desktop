@@ -1,10 +1,59 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { FileSignature, Receipt } from 'lucide-react';
 
 const SignatureForm = memo(({ signatures, onUpdate }) => {
   const handleUpdate = (type, field, value) => {
     onUpdate(type, field, value);
   };
+  
+  // Common input props to force inputs to work in Electron
+  const forceInputProps = {
+    autoComplete: "off",
+    spellCheck: false,
+    onFocus: (e) => {
+      e.target.readOnly = false;
+      e.target.removeAttribute('readonly');
+    },
+    onMouseDown: (e) => {
+      e.target.readOnly = false;
+      e.target.removeAttribute('readonly');
+    },
+    onInput: (e) => {
+      // Force input to be editable
+      if (e.target.hasAttribute('readonly')) {
+        e.target.removeAttribute('readonly');
+      }
+    }
+  };
+
+  // Force input re-focus after data loads in Electron
+  useEffect(() => {
+    // Force window focus in Electron to ensure inputs are interactive
+    if (window.electronAPI) {
+      // Small delay to ensure state has updated
+      const timer = setTimeout(() => {
+        // Force the window to refocus itself
+        window.focus();
+        document.body.focus();
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [signatures]);
+  
+  // Add click handler to force input activation in Electron
+  useEffect(() => {
+    const handleInputClick = (e) => {
+      if (e.target.tagName === 'INPUT' && e.target.closest('.signature-section')) {
+        // Force enable the input when clicked
+        e.target.readOnly = false;
+        e.target.focus();
+      }
+    };
+    
+    document.addEventListener('click', handleInputClick, true);
+    return () => document.removeEventListener('click', handleInputClick, true);
+  }, []);
 
   return (
     <>
@@ -31,6 +80,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'preparedBy', { ...signatures.quotation.preparedBy, name: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -41,6 +91,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'preparedBy', { ...signatures.quotation.preparedBy, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>
@@ -55,6 +106,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'approvedBy', { ...signatures.quotation.approvedBy, name: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -65,6 +117,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'approvedBy', { ...signatures.quotation.approvedBy, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>
@@ -79,6 +132,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'receivedBy', { ...signatures.quotation.receivedBy, label: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -89,6 +143,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('quotation', 'receivedBy', { ...signatures.quotation.receivedBy, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>
@@ -119,6 +174,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'preparedBy', { ...signatures.billing.preparedBy, name: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -129,6 +185,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'preparedBy', { ...signatures.billing.preparedBy, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>
@@ -143,6 +200,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'approvedBy', { ...signatures.billing.approvedBy, name: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -153,6 +211,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'approvedBy', { ...signatures.billing.approvedBy, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>
@@ -167,6 +226,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'finalApprover', { ...signatures.billing.finalApprover, name: e.target.value })}
                   className="form-input"
                   placeholder="Enter name"
+                  {...forceInputProps}
                 />
               </div>
               <div className="input-group">
@@ -177,6 +237,7 @@ const SignatureForm = memo(({ signatures, onUpdate }) => {
                   onChange={(e) => handleUpdate('billing', 'finalApprover', { ...signatures.billing.finalApprover, title: e.target.value })}
                   className="form-input"
                   placeholder="Enter title"
+                  {...forceInputProps}
                 />
               </div>
             </div>

@@ -60,6 +60,7 @@ export function useInvoiceState() {
   const [baseRates, setBaseRates] = useState({
     timeChargeRate2D: 2700,
     timeChargeRate3D: 2700,
+    timeChargeRateOthers: 0,
     otHoursMultiplier: 1.3,
     overtimeRate: 3300,
     softwareRate: 500,
@@ -343,6 +344,7 @@ export function useInvoiceState() {
     setBaseRates({
       timeChargeRate2D: 2700,
       timeChargeRate3D: 2700,
+      timeChargeRateOthers: 0,
       otHoursMultiplier: 1.3,
       overtimeRate: 3300,
       softwareRate: 500,
@@ -429,6 +431,7 @@ export function useInvoiceState() {
     setBaseRates(data.baseRates || {
       timeChargeRate2D: 2700,
       timeChargeRate3D: 2700,
+      timeChargeRateOthers: 0,
       otHoursMultiplier: 1.3,
       overtimeRate: 3300,
       softwareRate: 500,

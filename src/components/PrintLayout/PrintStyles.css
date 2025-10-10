@@ -1,5 +1,11 @@
 /* PRINT-SPECIFIC STYLES FOR EXACT FIGMA LAYOUT */
 
+/* Page setup for printing */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
 /* Hide everything by default when printing */
 @media print {
   body * {
@@ -12,16 +18,21 @@
     visibility: visible;
   }
   
-  /* Ensure print layout takes full page */
+  /* Ensure print layout takes full page with no margins */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
   .print-only-layout {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
     margin: 0;
     padding: 0;
     background: white;
+    overflow: visible;
   }
   
   /* Remove any transformations during print */
@@ -146,11 +157,17 @@
 
 /* Screen styles for the print layout (when not printing) */
 .print-only-layout {
-  display: none; /* Hidden by default on screen */
+  display: block;
+  position: fixed;
+  left: -10000px;
+  top: 0;
 }
 
 @media screen {
   .print-only-layout {
-    display: none; /* Ensure it's hidden on screen */
+    display: block;
+    position: fixed;
+    left: -10000px;
+    top: 0;
   }
 }

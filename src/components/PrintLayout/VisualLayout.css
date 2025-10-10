@@ -525,13 +525,13 @@
   font-size: 12px;
 }
 
-/* Table column widths - Updated layout without HOURS column */
-.table-visual .col-no { width: 5%; }
+/* Table column widths - Updated layout with UNIT PAGE column */
+.table-visual .col-no { width: 4%; }
 .table-visual .col-reference { width: 18%; }
-.table-visual .col-description { width: 36%; text-align: center; } /* Expanded to take HOURS column space */
-.table-visual .col-unitpage { width: 8%; } /* Only for PrintPreviewModal */
+.table-visual .col-description { width: 30%; text-align: center; }
+.table-visual .col-unitpage { width: 8%; }
 .table-visual .col-type { width: 6%; }
-.table-visual .col-price { width: 27%; text-align: center; }
+.table-visual .col-price { width: 26%; text-align: center; }
 
 .table-visual .description-cell {
   text-align: left;
@@ -713,16 +713,38 @@
 } */
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
   .quotation-visual-exact {
     transform: none !important;
     margin: 0 !important;
     padding: 8mm !important;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
   
   /* Force page breaks in print mode */
   .quotation-visual-exact[style*="pageBreakBefore"] {
     page-break-before: always !important;
     break-before: page !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Ensure first page doesn't break */
+  .quotation-visual-exact:not([style*="pageBreakBefore"]) {
+    page-break-after: auto;
   }
 }
 

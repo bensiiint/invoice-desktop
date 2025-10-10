@@ -39,6 +39,17 @@ const ValueBasisRow = memo(({ baseRates, onUpdate }) => {
               min="0"
             />
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <label style={{ fontSize: '10px', fontWeight: '600', minWidth: '20px' }}>Oth:</label>
+            <input
+              type="number"
+              value={baseRates.timeChargeRateOthers || 0}
+              onChange={(e) => handleUpdate('timeChargeRateOthers', e.target.value)}
+              className="table-input"
+              style={{ width: '50px', fontSize: '11px', padding: '2px 4px' }}
+              min="0"
+            />
+          </div>
         </div>
       </td>
       <td>
@@ -377,7 +388,15 @@ const TasksTable = memo(({
       // Calculate total hours from hours and minutes
       const totalHours = (task.hours || 0) + (task.minutes || 0) / 60;
       // Get the appropriate time charge rate based on task type
-      const timeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+      let timeChargeRate;
+      if (task.type === '2D') {
+        timeChargeRate = baseRates.timeChargeRate2D;
+      } else if (task.type === '3D' || !task.type) {
+        timeChargeRate = baseRates.timeChargeRate3D;
+      } else {
+        // For custom types (Others), use the Others rate
+        timeChargeRate = baseRates.timeChargeRateOthers || 0;
+      }
       const basicLabor = totalHours * timeChargeRate;
       const overtime = task.overtimeHours * baseRates.overtimeRate;
       const software = (task.softwareUnits || 0) * baseRates.softwareRate;
@@ -391,7 +410,14 @@ const TasksTable = memo(({
         const subTasks = tasks.filter(t => t.parentId === task.id);
         subTasks.forEach(subTask => {
           const subTotalHours = (subTask.hours || 0) + (subTask.minutes || 0) / 60;
-          const subTimeChargeRate = subTask.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
+          let subTimeChargeRate;
+          if (subTask.type === '2D') {
+            subTimeChargeRate = baseRates.timeChargeRate2D;
+          } else if (subTask.type === '3D' || !subTask.type) {
+            subTimeChargeRate = baseRates.timeChargeRate3D;
+          } else {
+            subTimeChargeRate = baseRates.timeChargeRateOthers || 0;
+          }
           aggregatedBasicLabor += subTotalHours * subTimeChargeRate;
           aggregatedOvertime += subTask.overtimeHours * baseRates.overtimeRate;
           aggregatedSoftware += (subTask.softwareUnits || 0) * baseRates.softwareRate;

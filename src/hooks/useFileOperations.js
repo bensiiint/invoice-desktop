@@ -104,7 +104,19 @@ export function useFileOperations({
           }
 
           loadData(data, fileHandle.name);
+          
           alert(`Quotation template loaded successfully from ${fileHandle.name}!`);
+          
+          // Force window refocus AFTER alert in Electron
+          setTimeout(() => {
+            window.focus();
+            document.body.focus();
+            // Force all inputs to be interactive
+            document.querySelectorAll('input, textarea').forEach(input => {
+              input.removeAttribute('readonly');
+              input.blur();
+            });
+          }, 150);
           return; // Exit here - don't run fallback
           
         } catch (fsError) {
@@ -166,7 +178,19 @@ export function useFileOperations({
       try {
         const { data, fileName } = await loadFile();
         loadData(data, fileName);
+        
         alert(`Quotation template loaded successfully from ${fileName}!`);
+        
+        // Force window refocus AFTER alert in Electron
+        setTimeout(() => {
+          window.focus();
+          document.body.focus();
+          // Force all inputs to be interactive
+          document.querySelectorAll('input, textarea').forEach(input => {
+            input.removeAttribute('readonly');
+            input.blur();
+          });
+        }, 150);
       } finally {
         document.body.removeChild(fileInput);
       }
