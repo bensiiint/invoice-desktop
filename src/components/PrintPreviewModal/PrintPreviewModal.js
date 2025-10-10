@@ -3,11 +3,13 @@ import {
   X, 
   Printer, 
   Download,
-  FileText
+  FileText,
+  Edit3
 } from 'lucide-react';
 import './PrintPreviewModal.css';
 import '../PrintLayout/VisualLayout.css';
 import Logo from "./KmtiLogo.png";
+import QuickEditModal from '../QuickEditModal/QuickEditModal';
 
 const PrintPreviewModal = memo(({ 
   isOpen, 
@@ -18,11 +20,48 @@ const PrintPreviewModal = memo(({
   tasks,
   baseRates,
   signatures,
-  manualOverrides = {}
+  manualOverrides = {},
+  onUpdateTasks,
+  onUpdateManualOverrides
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [printMode, setPrintMode] = useState('quotation'); // 'quotation' or 'billing'
+  const [isQuickEditOpen, setIsQuickEditOpen] = useState(false);
+  const [localTasks, setLocalTasks] = useState(tasks);
+  const [localManualOverrides, setLocalManualOverrides] = useState(manualOverrides);
   const previewRef = useRef(null);
+
+  // Sync local state when props change
+  React.useEffect(() => {
+    setLocalTasks(tasks);
+  }, [tasks]);
+
+  React.useEffect(() => {
+    setLocalManualOverrides(manualOverrides);
+  }, [manualOverrides]);
+
+  // Handle Quick Edit changes
+  const handleQuickEditApply = useCallback((editedTasks, editedOverrides) => {
+    // Update local state
+    setLocalTasks(prevTasks => {
+      return prevTasks.map(task => {
+        const editedTask = editedTasks.find(t => t.id === task.id);
+        if (editedTask && task.isMainTask) {
+          return { ...task, ...editedTask };
+        }
+        return task;
+      });
+    });
+    setLocalManualOverrides(editedOverrides);
+    
+    // Optionally update parent component
+    if (onUpdateTasks) {
+      onUpdateTasks(editedTasks);
+    }
+    if (onUpdateManualOverrides) {
+      onUpdateManualOverrides(editedOverrides);
+    }
+  }, [onUpdateTasks, onUpdateManualOverrides]);
 
 
   // Fixed settings for A4 paper
@@ -60,7 +99,7 @@ const PrintPreviewModal = memo(({
     const mainTotalHours = (task.hours || 0) + (task.minutes || 0) / 60;
     
     // Aggregate sub-task totals
-    const subTasks = tasks.filter(t => t.parentId === task.id);
+    const subTasks = localTasks.filter(t => t.parentId === task.id);
     const taskTimeChargeRate = task.type === '2D' ? baseRates.timeChargeRate2D : baseRates.timeChargeRate3D;
     let aggregatedHours = mainTotalHours;
     let aggregatedOvertime = task.overtimeHours;
@@ -79,7 +118,7 @@ const PrintPreviewModal = memo(({
     let software = aggregatedSoftware * baseRates.softwareRate;
     
     // Apply manual overrides if they exist
-    const override = manualOverrides[task.id];
+    const override = localManualOverrides[task.id];
     if (override) {
       basicLabor = override.basicLabor !== undefined ? override.basicLabor : basicLabor;
       overtime = override.overtime !== undefined ? override.overtime : overtime;
@@ -92,7 +131,7 @@ const PrintPreviewModal = memo(({
     }
     
     return basicLabor + overtime + software;
-  }, [tasks, baseRates, manualOverrides]);
+  }, [localTasks, baseRates, localManualOverrides]);
 
   // Memoize pagination logic and calculations
   const { 
@@ -111,7 +150,7 @@ const PrintPreviewModal = memo(({
     secondPageEmptyRows
   } = useMemo(() => {
     // Filter only main tasks for display - LIMIT ASSEMBLY ROWS TO 27
-    const mainTasks = tasks.filter(task => task.isMainTask).slice(0, 27); // MAXIMUM 27 ASSEMBLY ROWS
+    const mainTasks = localTasks.filter(task => task.isMainTask).slice(0, 27); // MAXIMUM 27 ASSEMBLY ROWS
     
     // Pagination logic based on assembly row count
     const assemblyRowCount = mainTasks.length; // Only count actual assembly rows
@@ -175,7 +214,7 @@ const PrintPreviewModal = memo(({
       totalPages,
       secondPageEmptyRows
     };
-  }, [tasks, baseRates, calculateTaskTotal]);
+  }, [localTasks, baseRates, calculateTaskTotal]);
 
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;
@@ -193,14 +232,14 @@ const PrintPreviewModal = memo(({
   // Calculate unit page count for each main task (assembly + sub-parts)
   const getUnitPageCount = useCallback((mainTask) => {
     // Get sub-tasks for this main task
-    const subTasks = tasks.filter(t => t.parentId === mainTask.id);
+    const subTasks = localTasks.filter(t => t.parentId === mainTask.id);
     // Return 1 (main task) + number of sub-tasks
     return 1 + subTasks.length;
-  }, [tasks]);
+  }, [localTasks]);
 
   const getAggregatedHours = useCallback((mainTask, mainTasks) => {
     // Get sub-tasks for this main task
-    const subTasks = tasks.filter(t => t.parentId === mainTask.id);
+    const subTasks = localTasks.filter(t => t.parentId === mainTask.id);
     
     // Sum up main task + sub-task hours and minutes
     let totalHours = mainTask.hours || 0;
@@ -216,7 +255,7 @@ const PrintPreviewModal = memo(({
     totalMinutes = totalMinutes % 60;
     
     return { hours: totalHours, minutes: totalMinutes };
-  }, [tasks]);
+  }, [localTasks]);
 
   // Handle print
   const handlePrint = useCallback(async () => {
@@ -1364,6 +1403,14 @@ const PrintPreviewModal = memo(({
             <div className="action-separator"></div>
             
             <button 
+              onClick={() => setIsQuickEditOpen(true)}
+              disabled={isProcessing}
+              className="action-button secondary"
+            >
+              <Edit3 size={14} />
+              Quick Edit
+            </button>
+            <button 
               onClick={handlePrint}
               disabled={isProcessing}
               className="action-button primary"
@@ -1420,6 +1467,16 @@ const PrintPreviewModal = memo(({
           </div>
         </div>
       </div>
+      
+      {/* Quick Edit Modal */}
+      <QuickEditModal
+        isOpen={isQuickEditOpen}
+        onClose={() => setIsQuickEditOpen(false)}
+        tasks={localTasks}
+        baseRates={baseRates}
+        manualOverrides={localManualOverrides}
+        onApplyChanges={handleQuickEditApply}
+      />
     </div>
   );
 });
