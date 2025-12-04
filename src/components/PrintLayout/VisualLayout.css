@@ -790,6 +790,16 @@
   .table-visual tbody tr:last-child td {
     border-top: 2px solid #000 !important; /* THICK TOTAL TOP */
   }
+  
+  /* Hide continuation note in print */
+  .continuation-note {
+    display: none !important;
+  }
+  
+  /* Hide page separator in print */
+  .page-separator {
+    display: none !important;
+  }
 }
 
 /* Billing Mode - Bottom alignment for details sections */

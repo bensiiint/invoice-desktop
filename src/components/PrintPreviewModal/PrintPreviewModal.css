@@ -809,6 +809,14 @@
   background: #f0f0f0 !important;
 }
 
+.pdf-generation .continuation-note {
+  display: none !important;
+}
+
+.pdf-generation .page-separator {
+  display: none !important;
+}
+
 /* PDF Generation: Remove only container padding, keep content structure */
 .pdf-generation .preview-content {
   padding: 0 !important;

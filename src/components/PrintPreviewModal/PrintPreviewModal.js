@@ -971,7 +971,7 @@ const PrintPreviewModal = memo(({
           
           {/* Continuation note when paginating */}
           {needsPagination && (
-            <tr>
+            <tr className="continuation-note">
               <td></td>
               <td></td>
               <td className="description-cell nothing-follow">--- CONTINUED ON NEXT PAGE ---</td>
