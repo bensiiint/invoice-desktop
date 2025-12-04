@@ -445,6 +445,11 @@
   flex-direction: column; /* Stack pages vertically */
   justify-content: flex-start; /* Start from top */
   align-items: center; /* Center horizontally */
+  /* Force consistent rendering at all zoom levels */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Preview Info Bar */
@@ -586,7 +591,7 @@
   width: 100%;
   margin-bottom: 10pt;
   margin-top: 50px;
-  border: 2pt solid #000;
+  border: 2px solid #000;
   border-collapse: collapse;
 }
 
@@ -596,11 +601,11 @@
   width: 50%;
   padding: 8pt;
   vertical-align: top;
-  border: 1pt solid #000;
+  border: 1px solid #000;
 }
 
 .pdf-generation .quotation-to {
-  border-right: 2pt solid #000;
+  border-right: 2px solid #000;
 }
 
 .pdf-generation .contact-header {
@@ -610,7 +615,7 @@
   color: #000;
   background: #f0f0f0;
   padding: 3pt 6pt;
-  border-bottom: 1pt solid #000;
+  border-bottom: 1px solid #000;
   margin: -8pt -8pt 6pt -8pt;
 }
 
@@ -643,22 +648,39 @@
   border-collapse: collapse;
   margin-bottom: 12pt;
   font-size: 9pt;
+  border: 2px solid #000 !important;
 }
 
-.pdf-generation .quotation-table-exact th,
-.pdf-generation .quotation-table-exact td {
-  border: 1pt solid #000;
+/* Header row - 2px borders */
+.pdf-generation .table-header th {
+  border: 2px solid #000 !important;
+  border-top: none !important;
   padding: 3pt 4pt;
   text-align: center;
   vertical-align: middle;
-}
-
-.pdf-generation .table-header th {
   background-color: #f0f0f0;
   font-weight: bold;
   font-size: 8pt;
   text-transform: uppercase;
   letter-spacing: 0.5pt;
+}
+
+/* Data rows - 1px borders (no fractional pixels) */
+.pdf-generation .item-row td {
+  border: 1px solid #ddd !important;
+  padding: 3pt 4pt;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Total row - 2px borders */
+.pdf-generation .total-amount-row td {
+  border: 2px solid #000 !important;
+  padding: 3pt 4pt;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #f0f0f0;
+  font-weight: bold;
 }
 
 .pdf-generation .item-row .col-description {
@@ -733,7 +755,7 @@
 
 .pdf-generation .sig-space {
   height: 30pt;
-  border-bottom: 1pt solid #000;
+  border-bottom: 1px solid #000;
   margin-bottom: 6pt;
   width: 55mm;
   margin-left: auto;
@@ -762,7 +784,7 @@
   color: #000;
   margin-top: 10pt;
   padding-top: 6pt;
-  border-top: 1pt solid #ddd;
+  border-top: 1px solid #ddd;
 }
 
 .pdf-generation .footer-left,
@@ -844,12 +866,12 @@
 .pdf-generation .quotation-table-exact th,
 .pdf-generation .quotation-table-exact td {
   padding: 3pt 4pt;
-  border: 1pt solid #000;
+  border: 1px solid #000;
 }
 
 .pdf-generation .detail-value {
-  padding-bottom: 1pt;
-  border-bottom: 1pt solid #000;
+  padding-bottom: 1px;
+  border-bottom: 1px solid #000;
 }
 
 /* Right section absolute positioning */
@@ -942,8 +964,8 @@
 .preview-content .detail-value {
   color: #000;
   font-weight: 500;
-  border-bottom: 1pt solid #000;
-  padding-bottom: 1pt;
+  border-bottom: 1px solid #000;
+  padding-bottom: 1px;
   min-width: 35mm;
   text-align: left;
 }
@@ -954,7 +976,7 @@
   width: 100%;
   margin-bottom: 15pt;
   margin-top: 70px;
-  border: 2pt solid #000;
+  border: 2px solid #000;
   border-collapse: collapse;
 }
 
@@ -964,11 +986,11 @@
   width: 50%;
   padding: 8pt;
   vertical-align: top;
-  border: 1pt solid #000;
+  border: 1px solid #000;
 }
 
 .preview-content .quotation-to {
-  border-right: 2pt solid #000;
+  border-right: 2px solid #000;
 }
 
 .preview-content .contact-header {
@@ -978,7 +1000,7 @@
   color: #000;
   background: #f0f0f0;
   padding: 3pt 6pt;
-  border-bottom: 1pt solid #000;
+  border-bottom: 1px solid #000;
   margin: -8pt -8pt 6pt -8pt;
 }
 
@@ -1006,29 +1028,47 @@
   line-height: 1.3;
 }
 
-/* Print Table - EXACT MATCH */
+/* Print Table - WHOLE INTEGER PIXELS ONLY */
 .preview-content .quotation-table-exact {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 12pt;
   font-size: 9pt;
   page-break-inside: avoid;
+  border: 2px solid #000; /* Outer border - 2px */
 }
 
-.preview-content .quotation-table-exact th,
-.preview-content .quotation-table-exact td {
-  border: 1pt solid #000;
+/* Header row - 2px borders (thick) */
+.preview-content .table-header th {
+  border: 2px solid #000;
+  border-top: none; /* No double top border */
   padding: 3pt 4pt;
   text-align: center;
   vertical-align: middle;
-}
-
-.preview-content .table-header th {
   background-color: #f0f0f0;
   font-weight: bold;
   font-size: 8pt;
   text-transform: uppercase;
   letter-spacing: 0.5pt;
+}
+
+/* Data rows - 1px borders (thin) - NO FRACTIONAL PIXELS */
+.preview-content .item-row td {
+  border: 1px solid #ddd;
+  padding: 3pt 4pt;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Total row - 2px borders (thick) */
+.preview-content .total-amount-row td {
+  border: 2px solid #000;
+  border-bottom: none; /* No double bottom border */
+  padding: 3pt 4pt;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #f0f0f0;
+  font-weight: bold;
 }
 
 .preview-content .item-row .col-description {
@@ -1110,7 +1150,7 @@
 
 .preview-content .sig-space {
   height: 30pt;
-  border-bottom: 1pt solid #000;
+  border-bottom: 1px solid #000;
   margin-bottom: 6pt;
   width: 55mm;
   margin-left: auto;
@@ -1142,7 +1182,7 @@
   color: #000;
   margin-top: 15pt;
   padding-top: 8pt;
-  border-top: 1pt solid #ddd;
+  border-top: 1px solid #ddd;
 }
 
 .preview-content .footer-left,

@@ -231,11 +231,15 @@ const PrintPreviewModal = memo(({
   
   // Calculate unit page count for each main task (assembly + sub-parts)
   const getUnitPageCount = useCallback((mainTask) => {
-    // Get sub-tasks for this main task
+    // Check for manual override first
+    const override = localManualOverrides[mainTask.id];
+    if (override?.unitPage !== undefined) {
+      return override.unitPage;
+    }
+    // Otherwise calculate: 1 (main task) + number of sub-tasks
     const subTasks = localTasks.filter(t => t.parentId === mainTask.id);
-    // Return 1 (main task) + number of sub-tasks
     return 1 + subTasks.length;
-  }, [localTasks]);
+  }, [localTasks, localManualOverrides]);
 
   const getAggregatedHours = useCallback((mainTask, mainTasks) => {
     // Get sub-tasks for this main task
@@ -786,7 +790,7 @@ const PrintPreviewModal = memo(({
           color: true,
           filename: `KMTI_${documentType}_${documentNo}.pdf`
         });
-        alert('PDF saved successfully!');
+        // Success message is shown by Electron backend
       } else {
         window.print();
         setTimeout(() => {

@@ -1,0 +1,9 @@
+To fix the double PDF success message:
+
+In PrintPreviewModal.js, find this line (around line 1023):
+        alert('PDF saved successfully!');
+
+And replace it with:
+        // Success message is shown by Electron backend
+
+This will remove the duplicate alert since the Electron backend already shows a success message when saving the PDF.

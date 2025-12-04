@@ -760,6 +760,69 @@ body {
   .top-nav {
     display: none !important;
   }
+
+  /* Print Table Styles - Thin and Subtle Data Row Lines */
+  .quotation-table-exact {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8pt;
+    font-size: 9pt;
+    page-break-inside: avoid;
+    border: 2pt solid #000 !important; /* Thick outer border */
+  }
+
+  /* Header row - thick borders */
+  .quotation-table-exact .table-header th {
+    border: 1.5pt solid #000 !important;
+    border-top: none !important;
+    padding: 3pt 4pt;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+  }
+
+  /* Data rows - thin and subtle borders */
+  .quotation-table-exact .item-row td {
+    border: 0.5pt solid #ccc !important; /* Thin, subtle gray borders */
+    padding: 3pt 4pt;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* Total row - thick borders */
+  .quotation-table-exact .total-amount-row td {
+    border: 1.5pt solid #000 !important;
+    border-bottom: none !important;
+    padding: 3pt 4pt;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+  }
+
+  /* Remove outer borders from edge cells */
+  .quotation-table-exact th:first-child,
+  .quotation-table-exact td:first-child {
+    border-left: none !important;
+  }
+
+  .quotation-table-exact th:last-child,
+  .quotation-table-exact td:last-child {
+    border-right: none !important;
+  }
+
+  .quotation-table-exact thead tr:first-child th {
+    border-top: none !important;
+  }
+
+  .quotation-table-exact tbody tr:last-child td,
+  .quotation-table-exact .total-amount-row td {
+    border-bottom: none !important;
+  }
 }
 
 /* Responsive Design */

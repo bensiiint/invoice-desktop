@@ -278,7 +278,11 @@ printMode = 'quotation'
           {/* Task rows */}
           {firstPageTasks.map((task, index) => {
             const aggregatedHours = getAggregatedHours(task);
-            const unitPageCount = 1 + tasks.filter(t => t.parentId === task.id).length;
+            // Check for manual override of unit page, otherwise calculate
+            const override = manualOverrides[task.id];
+            const unitPageCount = override?.unitPage !== undefined 
+              ? override.unitPage 
+              : 1 + tasks.filter(t => t.parentId === task.id).length;
             return (
               <tr key={task.id}>
                 <td>{index + 1}</td>
@@ -498,7 +502,11 @@ printMode = 'quotation'
           {/* Second page task rows - continue numbering */}
           {secondPageTasks.map((task, index) => {
             const aggregatedHours = getAggregatedHours(task);
-            const unitPageCount = 1 + tasks.filter(t => t.parentId === task.id).length;
+            // Check for manual override of unit page, otherwise calculate
+            const override = manualOverrides[task.id];
+            const unitPageCount = override?.unitPage !== undefined 
+              ? override.unitPage 
+              : 1 + tasks.filter(t => t.parentId === task.id).length;
             const taskNumber = firstPageTasks.length + index + 1; // Continue numbering from first page
             return (
               <tr key={task.id}>

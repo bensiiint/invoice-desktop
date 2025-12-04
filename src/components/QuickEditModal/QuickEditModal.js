@@ -13,6 +13,7 @@ const QuickEditModal = ({
   // Local state for editing
   const [editedTasks, setEditedTasks] = useState([]);
   const [editedOverrides, setEditedOverrides] = useState({});
+  const [unitPageOverrides, setUnitPageOverrides] = useState({});
 
   // Initialize edited data when modal opens
   React.useEffect(() => {
@@ -30,6 +31,7 @@ const QuickEditModal = ({
         softwareUnits: task.softwareUnits || 0,
       })));
       setEditedOverrides({ ...manualOverrides });
+      setUnitPageOverrides({});
     }
   }, [isOpen, tasks, manualOverrides]);
 
@@ -104,9 +106,37 @@ const QuickEditModal = ({
     }));
   };
 
+  // Get unit page count (calculated or overridden)
+  const getUnitPageCount = (taskId) => {
+    // Check for manual override first
+    if (unitPageOverrides[taskId] !== undefined) {
+      return unitPageOverrides[taskId];
+    }
+    // Otherwise calculate: 1 (main task) + number of sub-tasks
+    const subTaskCount = tasks.filter(t => t.parentId === taskId).length;
+    return 1 + subTaskCount;
+  };
+
+  // Update unit page override
+  const updateUnitPage = (taskId, newCount) => {
+    const numCount = parseInt(newCount) || 1;
+    setUnitPageOverrides(prev => ({
+      ...prev,
+      [taskId]: numCount
+    }));
+  };
+
   // Apply changes and close
   const handleApply = () => {
-    onApplyChanges(editedTasks, editedOverrides);
+    // Merge unit page overrides into the manual overrides object
+    const combinedOverrides = { ...editedOverrides };
+    Object.keys(unitPageOverrides).forEach(taskId => {
+      combinedOverrides[taskId] = {
+        ...combinedOverrides[taskId],
+        unitPage: unitPageOverrides[taskId]
+      };
+    });
+    onApplyChanges(editedTasks, combinedOverrides);
     onClose();
   };
 
@@ -124,6 +154,7 @@ const QuickEditModal = ({
       softwareUnits: task.softwareUnits || 0,
     })));
     setEditedOverrides({ ...manualOverrides });
+    setUnitPageOverrides({});
   };
 
   const formatCurrency = (amount) => {
@@ -168,8 +199,9 @@ const QuickEditModal = ({
               <thead>
                 <tr>
                   <th style={{width: '5%'}}>NO.</th>
-                  <th style={{width: '20%'}}>Reference No.</th>
-                  <th style={{width: '35%'}}>Description</th>
+                  <th style={{width: '15%'}}>Reference No.</th>
+                  <th style={{width: '30%'}}>Description</th>
+                  <th style={{width: '10%'}}>Unit Page</th>
                   <th style={{width: '10%'}}>Type</th>
                   <th style={{width: '15%'}}>Price</th>
                   <th style={{width: '15%'}}>Actions</th>
@@ -178,6 +210,8 @@ const QuickEditModal = ({
               <tbody>
                 {editedTasks.map((task, index) => {
                   const currentPrice = calculateTaskTotal(task);
+                  const unitPageCount = getUnitPageCount(task.id);
+                  const isUnitPageOverridden = unitPageOverrides[task.id] !== undefined;
                   return (
                     <tr key={task.id}>
                       <td className="center">{index + 1}</td>
@@ -195,6 +229,19 @@ const QuickEditModal = ({
                           value={task.description}
                           onChange={(e) => updateTask(task.id, 'description', e.target.value)}
                           className="edit-input"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={unitPageCount}
+                          onChange={(e) => updateUnitPage(task.id, e.target.value)}
+                          className="edit-input"
+                          style={{ 
+                            backgroundColor: isUnitPageOverridden ? '#fff3cd' : 'white',
+                            textAlign: 'center'
+                          }}
+                          min="1"
                         />
                       </td>
                       <td className="center">
@@ -224,22 +271,27 @@ const QuickEditModal = ({
                               delete newOverrides[task.id];
                               return newOverrides;
                             });
+                            setUnitPageOverrides(prev => {
+                              const newOverrides = { ...prev };
+                              delete newOverrides[task.id];
+                              return newOverrides;
+                            });
                           }}
                           className="reset-price-btn"
-                          title="Reset price to calculated value"
+                          title="Reset price and unit page to calculated values"
                         >
                           <RefreshCw size={14} />
                         </button>
                       </td>
                     </tr>
                   );
-                })}
+                })}>
 
                 {/* Overhead row */}
                 {baseRates.overheadPercentage > 0 && (
                   <tr className="summary-row">
                     <td></td>
-                    <td colSpan="3" className="summary-label">Administrative Overhead ({baseRates.overheadPercentage}%)</td>
+                    <td colSpan="4" className="summary-label">Administrative Overhead ({baseRates.overheadPercentage}%)</td>
                     <td className="summary-value">{formatCurrency(overhead)}</td>
                     <td></td>
                   </tr>
@@ -248,7 +300,7 @@ const QuickEditModal = ({
                 {/* Total row */}
                 <tr className="total-row">
                   <td></td>
-                  <td colSpan="3" className="total-label">TOTAL AMOUNT</td>
+                  <td colSpan="4" className="total-label">TOTAL AMOUNT</td>
                   <td className="total-value">{formatCurrency(grandTotal)}</td>
                   <td></td>
                 </tr>
