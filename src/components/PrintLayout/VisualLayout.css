@@ -748,6 +748,7 @@
   body {
     margin: 0;
     padding: 0;
+    background-color: white !important;
   }
   
   .quotation-visual-exact {
@@ -760,6 +761,7 @@
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    background-color: white !important;
   }
   
   /* Force page breaks in print mode */
@@ -777,6 +779,15 @@
   /* Print-specific table borders - clean structure */
   .table-visual {
     border: 2px solid #000 !important; /* THICK OUTER BORDER */
+    background-color: white !important; /* Force white background */
+  }
+  
+  .table-visual thead,
+  .table-visual tbody,
+  .table-visual tr,
+  .table-visual td,
+  .table-visual th {
+    background-color: transparent !important; /* All table elements transparent by default */
   }
   
   .table-visual thead th {
@@ -794,6 +805,22 @@
   /* Hide continuation note in print */
   .continuation-note {
     display: none !important;
+    height: 0 !important;
+    line-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Ensure empty rows don't show gray backgrounds in print */
+  .table-visual tbody tr td:empty {
+    background-color: transparent !important;
+  }
+  
+  /* Force white background on entire document */
+  .quotation-visual-exact {
+    background-color: white !important;
   }
   
   /* Hide page separator in print */

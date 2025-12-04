@@ -811,10 +811,50 @@
 
 .pdf-generation .continuation-note {
   display: none !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  visibility: hidden !important;
 }
 
 .pdf-generation .page-separator {
   display: none !important;
+}
+
+/* Ensure empty rows don't show gray backgrounds in PDF */
+.pdf-generation .table-visual tbody tr td:empty {
+  background-color: transparent !important;
+}
+
+/* Force white background on entire document */
+.pdf-generation .quotation-visual-exact {
+  background-color: white !important;
+}
+
+.pdf-generation .preview-content {
+  background-color: white !important;
+}
+
+/* Remove extra spacing from table */
+.pdf-generation .table-visual {
+  margin-bottom: 20pt !important; /* Consistent bottom margin */
+}
+
+/* Ensure quotation container has no extra height */
+.pdf-generation .quotation-visual-exact {
+  height: auto !important;
+  min-height: auto !important;
+}
+
+/* Ensure continuation row takes absolutely no space */
+.pdf-generation tbody .continuation-note {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
 
 /* PDF Generation: Remove only container padding, keep content structure */

@@ -983,7 +983,7 @@ const PrintPreviewModal = memo(({
           
           {/* Total row - only on first page when not paginating */}
           {!needsPagination && (
-            <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
+            <tr style={{fontWeight: 'bold', fontSize: '14px'}}>
               <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
               <td className="price-cell">{formatCurrency(grandTotal)}</td>
             </tr>
@@ -1250,7 +1250,7 @@ const PrintPreviewModal = memo(({
           ))}
           
           {/* Total row */}
-          <tr style={{backgroundColor: '#f5f5f5', fontWeight: 'bold', fontSize: '14px'}}>
+          <tr style={{fontWeight: 'bold', fontSize: '14px'}}>
             <td colSpan="5" style={{textAlign: 'center'}}>Total Amount</td>
             <td className="price-cell">{formatCurrency(grandTotal)}</td>
           </tr>
