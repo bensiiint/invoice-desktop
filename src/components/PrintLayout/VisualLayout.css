@@ -527,7 +527,7 @@
 /* Add right border to all cells except last column */
 .table-visual th:not(:last-child),
 .table-visual td:not(:last-child) {
-  border-right: 2px solid #000; /* THICK VERTICAL LINES */
+  border-right: 1px solid #000; /* THIN VERTICAL LINES */
 }
 
 /* ===== HORIZONTAL LINES (Top/Bottom borders) ===== */
