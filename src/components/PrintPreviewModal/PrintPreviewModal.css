@@ -21,8 +21,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.85);
+  /* Removed backdrop-filter blur - very expensive on scroll */
 }
 
 .modal-container {
@@ -36,6 +36,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Modal Header - Matching Home UI */
@@ -219,6 +222,32 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  /* PERFORMANCE: Smooth scrolling optimizations */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* PERFORMANCE: Custom scrollbar for better performance */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+.preview-panel-full .preview-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.preview-panel-full .preview-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-panel-full .preview-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.preview-panel-full .preview-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .preview-panel-full .preview-page {
@@ -227,6 +256,9 @@
   border-radius: 12px;
   overflow: hidden;
   margin: 0 auto;
+  /* PERFORMANCE: GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Preview Info - Full Width */
@@ -412,13 +444,19 @@
 
 .preview-container {
   flex: 1;
-  padding: 10px; /* Reduced padding to give more space for larger content */
+  padding: 10px;
   overflow: auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   position: relative;
-  min-height: 800px; /* Increased height for larger content */
+  min-height: 800px;
+  /* PERFORMANCE: GPU acceleration for smooth scrolling */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+  /* PERFORMANCE: Isolate rendering context */
+  contain: layout style paint;
 }
 
 .preview-page {
@@ -428,28 +466,33 @@
     0 2px 4px rgba(0, 0, 0, 0.06),
     0 0 0 1px rgba(0, 0, 0, 0.05);
   position: relative;
-  margin: 10px auto; /* Back to smaller margin since container has more padding */
+  margin: 10px auto;
   overflow: visible;
   border-radius: 4px;
   width: fit-content;
   height: fit-content;
+  /* PERFORMANCE: GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .preview-content {
   width: 100%;
   height: 100%;
-  overflow: visible; /* Allow content to show */
+  overflow: visible;
   position: relative;
-  padding: 0; /* Remove padding to let Figma layout handle spacing */
+  padding: 0;
   display: flex;
-  flex-direction: column; /* Stack pages vertically */
-  justify-content: flex-start; /* Start from top */
-  align-items: center; /* Center horizontally */
-  /* Force consistent rendering at all zoom levels */
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  /* PERFORMANCE: Optimized font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  /* PERFORMANCE: GPU acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* Preview Info Bar */
@@ -487,6 +530,9 @@
   font-family: Arial, sans-serif;
   font-size: 11px;
   background: white;
+  /* PERFORMANCE: GPU acceleration for smooth scrolling */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* PDF Generation Specific Styles - Match Print Exactly */
@@ -1084,6 +1130,9 @@
   font-size: 9pt;
   page-break-inside: avoid;
   border: 2px solid #000; /* Outer border - 2px */
+  /* PERFORMANCE: GPU acceleration for tables */
+  will-change: contents;
+  transform: translateZ(0);
 }
 
 /* Header row - 2px borders (thick) */
@@ -1296,6 +1345,14 @@
   padding: 0 !important;
 }
 
+/* Quotation Visual Exact - Main container GPU acceleration */
+.preview-content .quotation-visual-exact {
+  /* PERFORMANCE: GPU acceleration for main content container */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 /* Ensure black text for preview - EXACT MATCH */
 .preview-content * {
   color: #000 !important;
@@ -1488,6 +1545,9 @@
   margin-bottom: 25px !important;
   margin-top: 0 !important;
   min-height: 150px !important;
+  /* PERFORMANCE: GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .preview-content .logo-visual {

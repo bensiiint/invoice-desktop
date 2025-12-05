@@ -74,24 +74,12 @@ const PrintPreviewModal = memo(({
     showFooters: true,
   };
 
-  // Calculate paper dimensions (always A4 portrait)
-  const paperDimensions = useMemo(() => {
-    return {
-      width: 210,
-      height: 297,
-      label: 'A4 (210 × 297 mm)'
-    };
-  }, []);
+  // Calculate paper dimensions (always A4 portrait) - constants
+  const paperDimensions = { width: 210, height: 297, label: 'A4 (210 × 297 mm)' };
+  const margins = { top: 5, right: 5, bottom: 5, left: 5, label: 'Default' };
 
-  // Calculate margins (always default)
-  const margins = useMemo(() => {
-    return { top: 5, right: 5, bottom: 5, left: 5, label: 'Default' };
-  }, []);
-
-  // Calculate preview scale - fixed at 100%
-  const previewScale = useMemo(() => {
-    return 1.0;
-  }, []);
+  // Calculate preview scale - fixed at 100% (memoized constant)
+  const previewScale = 1.0;
 
   // Helper function to calculate task totals with manual overrides
   const calculateTaskTotal = useCallback((task) => {
@@ -216,6 +204,7 @@ const PrintPreviewModal = memo(({
     };
   }, [localTasks, baseRates, calculateTaskTotal]);
 
+  // PERFORMANCE: Memoize formatters to prevent recreating on every render
   const formatCurrency = useCallback((amount) => {
     return `¥${amount.toLocaleString()}`;
   }, []);
@@ -776,6 +765,39 @@ const PrintPreviewModal = memo(({
           ? (quotationDetails.invoiceNo || quotationDetails.quotationNo || 'Draft')
           : (quotationDetails.quotationNo || 'Draft');
         
+        // CLEAN FIX: Temporarily inject preview content into main document for Electron to capture
+        const previewContent = previewRef.current;
+        if (!previewContent) {
+          throw new Error('Preview content not found');
+        }
+
+        // Create a temporary container in the main document
+        const tempContainer = document.createElement('div');
+        tempContainer.id = 'electron-pdf-capture';
+        tempContainer.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 999999;
+          background: white;
+          overflow: visible;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        `;
+        
+        // Clone the preview content (this includes all your edits!)
+        tempContainer.innerHTML = previewContent.innerHTML;
+        
+        // Inject into main document
+        document.body.appendChild(tempContainer);
+        
+        // Longer delay to ensure Electron captures properly (but you'll see a brief flash)
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Generate PDF (now Electron will capture the correct content!)
         await window.electronAPI.printToPDF({
           margins: {
             marginType: 'custom',
@@ -790,7 +812,9 @@ const PrintPreviewModal = memo(({
           color: true,
           filename: `KMTI_${documentType}_${documentNo}.pdf`
         });
-        // Success message is shown by Electron backend
+        
+        // Clean up: Remove temp container
+        document.body.removeChild(tempContainer);
       } else {
         window.print();
         setTimeout(() => {
@@ -800,6 +824,12 @@ const PrintPreviewModal = memo(({
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('PDF generation failed. Please try again.');
+      
+      // Clean up on error
+      const tempContainer = document.getElementById('electron-pdf-capture');
+      if (tempContainer && document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
+      }
     } finally {
       setIsProcessing(false);
     }
